@@ -1,0 +1,144 @@
+.root-pane {
+    -fx-background-color: #0b0f19;
+    -fx-font-family: "Segoe UI";
+}
+
+.header {
+    -fx-background-color: #121827;
+    -fx-border-color: transparent transparent #293247 transparent;
+    -fx-border-width: 0 0 1 0;
+}
+
+.game-title {
+    -fx-text-fill: #a879ff;
+    -fx-font-size: 26px;
+    -fx-font-weight: bold;
+}
+
+.game-subtitle {
+    -fx-text-fill: #aeb9cc;
+    -fx-font-size: 13px;
+}
+
+.canvas-container {
+    -fx-background-color: #0b0f19;
+}
+
+.control-panel {
+    -fx-background-color: #121827;
+    -fx-border-color: #293247 transparent transparent #293247;
+    -fx-border-width: 0 0 0 1;
+}
+
+.section-title {
+    -fx-text-fill: #8794ad;
+    -fx-font-size: 11px;
+    -fx-font-weight: bold;
+}
+
+.information-card {
+    -fx-background-color: #192133;
+    -fx-background-radius: 8px;
+    -fx-padding: 14px;
+    -fx-border-color: #293247;
+    -fx-border-radius: 8px;
+}
+
+.information-label,
+.secondary-label,
+.sequence-label {
+    -fx-text-fill: #c8d1e3;
+    -fx-font-size: 13px;
+}
+
+.target-label {
+    -fx-text-fill: #f4c95d;
+    -fx-font-size: 15px;
+    -fx-font-weight: bold;
+}
+
+.position-label {
+    -fx-text-fill: #55d6a8;
+    -fx-font-size: 15px;
+    -fx-font-weight: bold;
+}
+
+.button {
+    -fx-cursor: hand;
+    -fx-background-radius: 6px;
+    -fx-border-radius: 6px;
+    -fx-font-weight: bold;
+}
+
+.primary-button {
+    -fx-background-color: #8d5cff;
+    -fx-text-fill: white;
+    -fx-padding: 11px;
+}
+
+.primary-button:hover {
+    -fx-background-color: #a879ff;
+}
+
+.secondary-button,
+.small-button {
+    -fx-background-color: #222c42;
+    -fx-text-fill: #dce4f5;
+    -fx-border-color: #394660;
+    -fx-padding: 9px;
+}
+
+.secondary-button:hover,
+.small-button:hover {
+    -fx-background-color: #2d3953;
+}
+
+.small-button {
+    -fx-min-width: 34px;
+    -fx-padding: 5px;
+}
+
+.movement-button {
+    -fx-background-color: #25203b;
+    -fx-text-fill: #c7a9ff;
+    -fx-border-color: #6e4bb8;
+    -fx-padding: 11px;
+    -fx-alignment: center-left;
+}
+
+.movement-button:hover {
+    -fx-background-color: #352b52;
+}
+
+.button:disabled {
+    -fx-opacity: 0.45;
+}
+
+.status-neutral,
+.status-solved,
+.status-incomplete,
+.status-error {
+    -fx-background-radius: 7px;
+    -fx-padding: 12px;
+    -fx-font-size: 13px;
+}
+
+.status-neutral {
+    -fx-background-color: #192133;
+    -fx-text-fill: #aeb9cc;
+}
+
+.status-solved {
+    -fx-background-color: #17362f;
+    -fx-text-fill: #69e0b5;
+}
+
+.status-incomplete {
+    -fx-background-color: #3b321b;
+    -fx-text-fill: #f4c95d;
+}
+
+.status-error {
+    -fx-background-color: #3d2028;
+    -fx-text-fill: #ff879d;
+}

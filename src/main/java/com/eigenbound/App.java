@@ -1,38 +1,44 @@
 package com.eigenbound;
 
+import java.io.IOException;
+
 import javafx.application.Application;
 import javafx.fxml.FXMLLoader;
 import javafx.scene.Parent;
 import javafx.scene.Scene;
 import javafx.stage.Stage;
 
-import java.io.IOException;
-
-/**
- * JavaFX App
- */
 public class App extends Application {
 
-    private static Scene scene;
+    private static final double WINDOW_WIDTH = 1180;
+    private static final double WINDOW_HEIGHT = 720;
 
     @Override
     public void start(Stage stage) throws IOException {
-        scene = new Scene(loadFXML("primary"), 640, 480);
+        Scene scene = new Scene(
+                loadFXML("vector-laboratory"),
+                WINDOW_WIDTH,
+                WINDOW_HEIGHT);
+
+        stage.setTitle(
+                "Eigenbound — Valley of Vectors");
+        stage.setMinWidth(960);
+        stage.setMinHeight(640);
         stage.setScene(scene);
         stage.show();
     }
 
-    static void setRoot(String fxml) throws IOException {
-        scene.setRoot(loadFXML(fxml));
-    }
+    private static Parent loadFXML(String fileName)
+            throws IOException {
 
-    private static Parent loadFXML(String fxml) throws IOException {
-        FXMLLoader fxmlLoader = new FXMLLoader(App.class.getResource(fxml + ".fxml"));
-        return fxmlLoader.load();
+        FXMLLoader loader = new FXMLLoader(
+                App.class.getResource(
+                        fileName + ".fxml"));
+
+        return loader.load();
     }
 
     public static void main(String[] args) {
         launch();
     }
-
 }

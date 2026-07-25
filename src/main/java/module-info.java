@@ -2,6 +2,8 @@ module com.eigenbound {
     requires javafx.controls;
     requires javafx.fxml;
 
-    opens com.eigenbound to javafx.fxml;
     exports com.eigenbound;
+
+    opens com.eigenbound.presentation.canvas to javafx.fxml;
+    opens com.eigenbound.presentation.laboratory to javafx.fxml;
 }
