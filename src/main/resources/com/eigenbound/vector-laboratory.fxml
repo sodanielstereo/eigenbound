@@ -4,10 +4,16 @@
 <?import javafx.geometry.Insets?>
 <?import javafx.scene.control.Button?>
 <?import javafx.scene.control.Label?>
+<?import javafx.scene.control.ScrollPane?>
 <?import javafx.scene.layout.BorderPane?>
 <?import javafx.scene.layout.HBox?>
 <?import javafx.scene.layout.StackPane?>
 <?import javafx.scene.layout.VBox?>
+<!--
+    Main interactive laboratory for the Valley of Vectors.
+    The center renders the Cartesian plane and the right panel contains
+    challenge information, movement controls and progressive hints.
+-->
 
 <BorderPane xmlns="http://javafx.com/javafx"
             xmlns:fx="http://javafx.com/fxml"
@@ -45,77 +51,101 @@
   </center>
 
   <right>
-    <VBox prefWidth="330.0"
-                  minWidth="300.0"
-                  spacing="14.0"
-                  styleClass="control-panel">
-      <padding>
-        <Insets top="20.0"
-                                right="20.0"
-                                bottom="20.0"
-                                left="20.0"/>
-      </padding>
-      <Label text="EXPEDICIÓN"
-                         styleClass="section-title"/>
-      <HBox spacing="8.0">
-        <Button text="−"
-                                onAction="#onDecreaseDifficulty"
-                                styleClass="small-button"/>
-        <Label fx:id="difficultyLabel"
-                               text="Dificultad: 1"
-                               styleClass="information-label"/>
-        <Button text="+"
-                                onAction="#onIncreaseDifficulty"
-                                styleClass="small-button"/>
-      </HBox>
-      <Label fx:id="seedLabel"
-                         text="Semilla:"
-                         styleClass="secondary-label"/>
-      <VBox spacing="5.0"
-                        styleClass="information-card">
-        <Label fx:id="targetLabel"
-                               text="Objetivo:"
-                               styleClass="target-label"/>
-        <Label fx:id="positionLabel"
-                               text="Posición:"
-                               styleClass="position-label"/>
-        <Label fx:id="stepsLabel"
-                               text="Movimientos restantes:"
-                               styleClass="information-label"/>
-      </VBox>
-      <Label text="VECTORES DISPONIBLES"
-                         styleClass="section-title"/>
-      <VBox fx:id="movementButtonContainer"
-                        spacing="8.0"/>
-      <Label fx:id="selectedMovesLabel"
-                         text="Secuencia: ninguna"
-                         wrapText="true"
-                         styleClass="sequence-label"/>
-      <HBox spacing="8.0">
-        <Button fx:id="undoButton"
-                                text="Deshacer"
-                                onAction="#onUndo"
-                                maxWidth="Infinity"
-                                HBox.hgrow="ALWAYS"
-                                styleClass="secondary-button"/>
-        <Button text="Reiniciar"
-                                onAction="#onReset"
-                                maxWidth="Infinity"
-                                HBox.hgrow="ALWAYS"
-                                styleClass="secondary-button"/>
-      </HBox>
-      <Button text="COMPROBAR"
-                          onAction="#onCheck"
-                          maxWidth="Infinity"
-                          styleClass="primary-button"/>
-      <Button text="NUEVO DESAFÍO"
-                          onAction="#onNewChallenge"
-                          maxWidth="Infinity"
-                          styleClass="secondary-button"/>
-      <Label fx:id="statusLabel"
-                         text="Combina los vectores para alcanzar el portal."
-                         wrapText="true"
-                         styleClass="status-neutral"/>
-    </VBox>
+    <!--
+            A scrollable panel prevents controls from being clipped on
+            displays with limited vertical space.
+        -->
+    <ScrollPane fitToWidth="true"
+                        hbarPolicy="NEVER"
+                        prefWidth="340.0"
+                        minWidth="320.0"
+                        styleClass="control-scroll">
+      <content>
+        <VBox spacing="14.0"
+                              styleClass="control-panel">
+          <padding>
+            <Insets top="20.0"
+                                            right="20.0"
+                                            bottom="20.0"
+                                            left="20.0"/>
+          </padding>
+          <Label text="EXPEDICIÓN"
+                                     styleClass="section-title"/>
+          <HBox spacing="8.0">
+            <Button text="−"
+                                            onAction="#onDecreaseDifficulty"
+                                            styleClass="small-button"/>
+            <Label fx:id="difficultyLabel"
+                                           text="Dificultad: 1"
+                                           styleClass="information-label"/>
+            <Button text="+"
+                                            onAction="#onIncreaseDifficulty"
+                                            styleClass="small-button"/>
+          </HBox>
+          <Label fx:id="seedLabel"
+                                     text="Semilla:"
+                                     styleClass="secondary-label"/>
+          <VBox spacing="5.0"
+                                    styleClass="information-card">
+            <Label fx:id="targetLabel"
+                                           text="Objetivo:"
+                                           styleClass="target-label"/>
+            <Label fx:id="positionLabel"
+                                           text="Posición:"
+                                           styleClass="position-label"/>
+            <Label fx:id="stepsLabel"
+                                           text="Movimientos restantes:"
+                                           styleClass="information-label"/>
+          </VBox>
+          <Label text="VECTORES DISPONIBLES"
+                                     styleClass="section-title"/>
+          <VBox fx:id="movementButtonContainer"
+                                    spacing="8.0"/>
+          <Label fx:id="selectedMovesLabel"
+                                     text="Secuencia: ninguna"
+                                     wrapText="true"
+                                     styleClass="sequence-label"/>
+          <Label text="SISTEMA DE PISTAS"
+                                     styleClass="section-title"/>
+          <VBox spacing="8.0"
+                                    styleClass="hint-card">
+            <Label fx:id="hintLabel"
+                                           text="Las pistas aparecerán de forma progresiva."
+                                           wrapText="true"
+                                           styleClass="hint-label"/>
+            <Button fx:id="hintButton"
+                                            text="PISTA 1/4"
+                                            onAction="#onHint"
+                                            maxWidth="Infinity"
+                                            styleClass="hint-button"/>
+          </VBox>
+          <HBox spacing="8.0">
+            <Button fx:id="undoButton"
+                                            text="Deshacer"
+                                            onAction="#onUndo"
+                                            maxWidth="Infinity"
+                                            HBox.hgrow="ALWAYS"
+                                            styleClass="secondary-button"/>
+            <Button text="Reiniciar"
+                                            onAction="#onReset"
+                                            maxWidth="Infinity"
+                                            HBox.hgrow="ALWAYS"
+                                            styleClass="secondary-button"/>
+          </HBox>
+          <Button text="COMPROBAR"
+                                      onAction="#onCheck"
+                                      maxWidth="Infinity"
+                                      styleClass="primary-button"/>
+          <Button text="NUEVO DESAFÍO"
+                                      onAction="#onNewChallenge"
+                                      maxWidth="Infinity"
+                                      styleClass="secondary-button"/>
+          <Label fx:id="statusLabel"
+                                     text="Combina los vectores para alcanzar el portal."
+                                     wrapText="true"
+                                     styleClass="status-neutral"/>
+        </VBox>
+      </content>
+    </ScrollPane>
   </right>
 </BorderPane>
