@@ -1,7 +1,13 @@
+/*
+ * Main visual theme for Eigenbound's Vector Laboratory.
+ */
+
 .root-pane {
     -fx-background-color: #0b0f19;
     -fx-font-family: "Segoe UI";
 }
+
+/* Header */
 
 .header {
     -fx-background-color: #121827;
@@ -20,14 +26,36 @@
     -fx-font-size: 13px;
 }
 
+/* Cartesian plane */
+
 .canvas-container {
     -fx-background-color: #0b0f19;
 }
 
+/* Scrollable control panel */
+
+.control-scroll {
+    -fx-background-color: #121827;
+    -fx-border-color: transparent transparent transparent #293247;
+    -fx-border-width: 0 0 0 1;
+    -fx-padding: 0;
+}
+
+.control-scroll > .viewport {
+    -fx-background-color: #121827;
+}
+
+.control-scroll .scroll-bar:vertical {
+    -fx-background-color: #121827;
+}
+
+.control-scroll .scroll-bar:vertical .thumb {
+    -fx-background-color: #394660;
+    -fx-background-radius: 6px;
+}
+
 .control-panel {
     -fx-background-color: #121827;
-    -fx-border-color: #293247 transparent transparent #293247;
-    -fx-border-width: 0 0 0 1;
 }
 
 .section-title {
@@ -35,6 +63,8 @@
     -fx-font-size: 11px;
     -fx-font-weight: bold;
 }
+
+/* Challenge information */
 
 .information-card {
     -fx-background-color: #192133;
@@ -62,6 +92,8 @@
     -fx-font-size: 15px;
     -fx-font-weight: bold;
 }
+
+/* Shared button styles */
 
 .button {
     -fx-cursor: hand;
@@ -113,6 +145,44 @@
 .button:disabled {
     -fx-opacity: 0.45;
 }
+
+/* Progressive hint system */
+
+.hint-card {
+    -fx-background-color: #18233a;
+    -fx-background-radius: 8px;
+    -fx-border-color: #38517a;
+    -fx-border-radius: 8px;
+    -fx-padding: 12px;
+}
+
+.hint-label {
+    -fx-text-fill: #b8c9e8;
+    -fx-font-size: 13px;
+}
+
+.hint-button {
+    -fx-background-color: #244875;
+    -fx-text-fill: #dcecff;
+    -fx-border-color: #4f80bd;
+    -fx-padding: 9px;
+}
+
+.hint-button:hover {
+    -fx-background-color: #315d91;
+}
+
+.suggested-movement {
+    -fx-background-color: #3f633c;
+    -fx-border-color: #72dc74;
+    -fx-text-fill: #caffca;
+}
+
+.suggested-movement:hover {
+    -fx-background-color: #4b7547;
+}
+
+/* Challenge status messages */
 
 .status-neutral,
 .status-solved,

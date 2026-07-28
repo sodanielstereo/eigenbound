@@ -2,9 +2,14 @@ package com.eigenbound.presentation.laboratory;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Locale;
 
+import com.eigenbound.application.hint.HintLevel;
+import com.eigenbound.application.hint.VectorHint;
+import com.eigenbound.application.hint.VectorHintService;
 import com.eigenbound.application.session.ChallengeSession;
 import com.eigenbound.domain.challenge.ChallengeResult;
+import com.eigenbound.domain.challenge.ChallengeStatus;
 import com.eigenbound.domain.challenge.VectorChallenge;
 import com.eigenbound.domain.generation.GeneratedVectorChallenge;
 import com.eigenbound.domain.generation.VectorChallengeGenerator;
@@ -16,18 +21,43 @@ import javafx.scene.control.Button;
 import javafx.scene.control.Label;
 import javafx.scene.layout.VBox;
 
+/**
+ * Controls the interactive Vector Laboratory screen.
+ *
+ * <p>
+ * This controller connects the JavaFX interface with the application and
+ * domain layers. It manages challenge generation, player movement selection,
+ * challenge validation and progressive hints.
+ * </p>
+ *
+ * <p>
+ * Mathematical operations and search algorithms are not implemented in
+ * this controller. They remain delegated to {@link ChallengeSession},
+ * {@link VectorChallengeGenerator} and {@link VectorHintService}.
+ * </p>
+ */
 public final class VectorLaboratoryController {
 
     private static final long INITIAL_SEED = 20260725L;
     private static final int INITIAL_DIFFICULTY = 1;
 
+    private static final HintLevel[] HINT_SEQUENCE = {
+            HintLevel.CONCEPTUAL,
+            HintLevel.DIRECTIONAL,
+            HintLevel.NEXT_MOVE,
+            HintLevel.FULL_SOLUTION
+    };
+
     private final VectorChallengeGenerator generator = new VectorChallengeGenerator();
+
+    private final VectorHintService hintService = new VectorHintService();
 
     private final List<Button> movementButtons = new ArrayList<>();
 
     private ChallengeSession session;
     private long currentSeed = INITIAL_SEED;
     private int difficulty = INITIAL_DIFFICULTY;
+    private int currentHintIndex;
 
     @FXML
     private VectorCanvas vectorCanvas;
@@ -57,27 +87,47 @@ public final class VectorLaboratoryController {
     private Label statusLabel;
 
     @FXML
+    private Label hintLabel;
+
+    @FXML
     private Button undoButton;
 
+    @FXML
+    private Button hintButton;
+
+    /**
+     * Initializes the laboratory after all FXML components have been injected.
+     */
     @FXML
     private void initialize() {
         loadChallenge();
     }
 
+    /**
+     * Removes the most recently selected movement.
+     */
     @FXML
     private void onUndo() {
         session.undo();
         clearStatus();
+        resetHints();
         refreshView();
     }
 
+    /**
+     * Removes every selected movement and returns to the starting position.
+     */
     @FXML
     private void onReset() {
         session.reset();
         clearStatus();
+        resetHints();
         refreshView();
     }
 
+    /**
+     * Evaluates the current movement sequence and displays its result.
+     */
     @FXML
     private void onCheck() {
         ChallengeResult result = session.check();
@@ -110,12 +160,47 @@ public final class VectorLaboratoryController {
         }
     }
 
+    /**
+     * Displays the next progressive hint for the current attempt.
+     */
+    @FXML
+    private void onHint() {
+        if (currentHintIndex >= HINT_SEQUENCE.length) {
+            return;
+        }
+
+        HintLevel level = HINT_SEQUENCE[currentHintIndex];
+
+        VectorHint hint = hintService.generateHint(
+                session,
+                level);
+
+        hintLabel.setText(hint.message());
+
+        clearMovementHighlights();
+
+        if (level == HintLevel.NEXT_MOVE
+                && !hint.movements().isEmpty()) {
+            highlightMovement(
+                    hint.movements().get(0));
+        }
+
+        currentHintIndex++;
+        updateHintButton();
+    }
+
+    /**
+     * Generates another challenge using the next deterministic seed.
+     */
     @FXML
     private void onNewChallenge() {
         currentSeed++;
         loadChallenge();
     }
 
+    /**
+     * Increases the challenge difficulty when the maximum has not been reached.
+     */
     @FXML
     private void onIncreaseDifficulty() {
         if (difficulty < 5) {
@@ -125,6 +210,9 @@ public final class VectorLaboratoryController {
         }
     }
 
+    /**
+     * Decreases the challenge difficulty when the minimum has not been reached.
+     */
     @FXML
     private void onDecreaseDifficulty() {
         if (difficulty > 1) {
@@ -134,8 +222,14 @@ public final class VectorLaboratoryController {
         }
     }
 
+    /**
+     * Generates and loads the challenge associated with the current seed and
+     * difficulty.
+     */
     private void loadChallenge() {
-        GeneratedVectorChallenge generated = generator.generate(currentSeed, difficulty);
+        GeneratedVectorChallenge generated = generator.generate(
+                currentSeed,
+                difficulty);
 
         session = new ChallengeSession(
                 generated.challenge());
@@ -147,12 +241,22 @@ public final class VectorLaboratoryController {
                 generated.challenge());
 
         clearStatus();
+        resetHints();
         refreshView();
     }
 
+    /**
+     * Creates one interactive button for every movement available in the
+     * challenge.
+     *
+     * @param challenge challenge whose movements must be displayed
+     */
     private void createMovementButtons(
             VectorChallenge challenge) {
-        movementButtonContainer.getChildren().clear();
+        movementButtonContainer
+                .getChildren()
+                .clear();
+
         movementButtons.clear();
 
         for (int index = 0; index < challenge.availableMoves().size(); index++) {
@@ -164,25 +268,37 @@ public final class VectorLaboratoryController {
                             + "  "
                             + formatVector(movement));
 
-            button.getStyleClass().add("movement-button");
+            button.getStyleClass()
+                    .add("movement-button");
+
             button.setMaxWidth(Double.MAX_VALUE);
 
             button.setOnAction(
                     event -> selectMovement(movement));
 
             movementButtons.add(button);
+
             movementButtonContainer
                     .getChildren()
                     .add(button);
         }
     }
 
+    /**
+     * Adds a movement to the current attempt.
+     *
+     * @param movement movement selected by the player
+     */
     private void selectMovement(Vector2 movement) {
         session.selectMove(movement);
         clearStatus();
+        resetHints();
         refreshView();
     }
 
+    /**
+     * Refreshes every interface component that depends on session state.
+     */
     private void refreshView() {
         VectorChallenge challenge = session.challenge();
 
@@ -198,7 +314,8 @@ public final class VectorLaboratoryController {
 
         positionLabel.setText(
                 "Posición: "
-                        + formatVector(session.currentPosition()));
+                        + formatVector(
+                                session.currentPosition()));
 
         stepsLabel.setText(
                 "Movimientos restantes: "
@@ -209,16 +326,88 @@ public final class VectorLaboratoryController {
 
         undoButton.setDisable(!session.canUndo());
 
-        boolean stepLimitReached = session.remainingSteps() == 0;
+        boolean challengeSolved = session.check().status() == ChallengeStatus.SOLVED;
+
+        boolean movementsDisabled = session.remainingSteps() == 0
+                || challengeSolved;
 
         for (Button button : movementButtons) {
-            button.setDisable(stepLimitReached);
+            button.setDisable(movementsDisabled);
         }
 
         vectorCanvas.setSelectedMoves(
                 session.selectedMoves());
     }
 
+    /**
+     * Resets progressive hints whenever the current attempt changes.
+     */
+    private void resetHints() {
+        currentHintIndex = 0;
+
+        hintLabel.setText(
+                "Las pistas aparecerán de forma progresiva.");
+
+        clearMovementHighlights();
+        updateHintButton();
+    }
+
+    /**
+     * Updates the hint button according to the current progressive hint level.
+     */
+    private void updateHintButton() {
+        if (currentHintIndex >= HINT_SEQUENCE.length) {
+            hintButton.setText(
+                    "PISTAS COMPLETADAS");
+            hintButton.setDisable(true);
+            return;
+        }
+
+        hintButton.setText(
+                "PISTA "
+                        + (currentHintIndex + 1)
+                        + "/"
+                        + HINT_SEQUENCE.length);
+
+        hintButton.setDisable(false);
+    }
+
+    /**
+     * Highlights the interface button associated with a suggested movement.
+     *
+     * @param suggestedMovement movement recommended by the hint service
+     */
+    private void highlightMovement(
+            Vector2 suggestedMovement) {
+        VectorChallenge challenge = session.challenge();
+
+        for (int index = 0; index < movementButtons.size(); index++) {
+
+            Vector2 movement = challenge.availableMoves().get(index);
+
+            if (movement.equals(suggestedMovement)) {
+                movementButtons.get(index)
+                        .getStyleClass()
+                        .add("suggested-movement");
+            }
+        }
+    }
+
+    /**
+     * Removes hint highlighting from every movement button.
+     */
+    private void clearMovementHighlights() {
+        for (Button button : movementButtons) {
+            button.getStyleClass()
+                    .remove("suggested-movement");
+        }
+    }
+
+    /**
+     * Formats the currently selected movement sequence.
+     *
+     * @return readable representation of the selected movements
+     */
     private String formatSelectedMovements() {
         if (session.selectedMoves().isEmpty()) {
             return "Secuencia: ninguna";
@@ -240,10 +429,22 @@ public final class VectorLaboratoryController {
         return builder.toString();
     }
 
+    /**
+     * Generates an alphabetical name for a movement.
+     *
+     * @param index zero-based movement index
+     * @return movement name
+     */
     private String movementName(int index) {
         return Character.toString('A' + index);
     }
 
+    /**
+     * Formats a vector using mathematical coordinate notation.
+     *
+     * @param vector vector to format
+     * @return formatted vector
+     */
     private String formatVector(Vector2 vector) {
         return "("
                 + formatNumber(vector.x())
@@ -252,20 +453,37 @@ public final class VectorLaboratoryController {
                 + ")";
     }
 
+    /**
+     * Formats a number without unnecessary decimal places.
+     *
+     * @param value numeric value
+     * @return readable numeric representation
+     */
     private String formatNumber(double value) {
         if (value == Math.rint(value)) {
             return Long.toString((long) value);
         }
 
-        return String.format("%.2f", value);
+        return String.format(
+                Locale.ROOT,
+                "%.2f",
+                value);
     }
 
+    /**
+     * Restores the default challenge status message.
+     */
     private void clearStatus() {
         statusLabel.setText(
                 "Combina los vectores para alcanzar el portal.");
         setStatusStyle("status-neutral");
     }
 
+    /**
+     * Applies one status style while removing all other possible status styles.
+     *
+     * @param styleClass CSS class that must be applied
+     */
     private void setStatusStyle(String styleClass) {
         statusLabel.getStyleClass().removeAll(
                 "status-neutral",
@@ -273,6 +491,7 @@ public final class VectorLaboratoryController {
                 "status-incomplete",
                 "status-error");
 
-        statusLabel.getStyleClass().add(styleClass);
+        statusLabel.getStyleClass()
+                .add(styleClass);
     }
 }
