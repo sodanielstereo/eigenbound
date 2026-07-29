@@ -4,6 +4,9 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Locale;
 
+import com.eigenbound.application.explanation.VectorAdditionStep;
+import com.eigenbound.application.explanation.VectorExplanation;
+import com.eigenbound.application.explanation.VectorExplanationService;
 import com.eigenbound.application.hint.HintLevel;
 import com.eigenbound.application.hint.VectorHint;
 import com.eigenbound.application.hint.VectorHintService;
@@ -48,6 +51,8 @@ public final class VectorLaboratoryController {
             HintLevel.FULL_SOLUTION
     };
 
+    private final VectorExplanationService explanationService = new VectorExplanationService();
+
     private final VectorChallengeGenerator generator = new VectorChallengeGenerator();
 
     private final VectorHintService hintService = new VectorHintService();
@@ -64,6 +69,9 @@ public final class VectorLaboratoryController {
 
     @FXML
     private VBox movementButtonContainer;
+
+    @FXML
+    private VBox explanationContainer;
 
     @FXML
     private Label seedLabel;
@@ -95,6 +103,9 @@ public final class VectorLaboratoryController {
     @FXML
     private Button hintButton;
 
+    @FXML
+    private Label explanationSummaryLabel;
+
     /**
      * Initializes the laboratory after all FXML components have been injected.
      */
@@ -111,6 +122,7 @@ public final class VectorLaboratoryController {
         session.undo();
         clearStatus();
         resetHints();
+        clearExplanation();
         refreshView();
     }
 
@@ -122,11 +134,13 @@ public final class VectorLaboratoryController {
         session.reset();
         clearStatus();
         resetHints();
+        clearExplanation();
         refreshView();
     }
 
     /**
-     * Evaluates the current movement sequence and displays its result.
+     * Evaluates the current sequence and displays both the result and its
+     * step-by-step mathematical explanation.
      */
     @FXML
     private void onCheck() {
@@ -158,6 +172,8 @@ public final class VectorLaboratoryController {
                 setStatusStyle("status-error");
             }
         }
+
+        showExplanation();
     }
 
     /**
@@ -242,6 +258,7 @@ public final class VectorLaboratoryController {
 
         clearStatus();
         resetHints();
+        clearExplanation();
         refreshView();
     }
 
@@ -293,6 +310,7 @@ public final class VectorLaboratoryController {
         session.selectMove(movement);
         clearStatus();
         resetHints();
+        clearExplanation();
         refreshView();
     }
 
@@ -492,6 +510,134 @@ public final class VectorLaboratoryController {
                 "status-error");
 
         statusLabel.getStyleClass()
+                .add(styleClass);
+    }
+
+    /**
+     * Builds and displays the mathematical explanation of the current attempt.
+     */
+    private void showExplanation() {
+        VectorExplanation explanation = explanationService.explain(session);
+
+        explanationContainer.getChildren().clear();
+
+        if (explanation.steps().isEmpty()) {
+            Label placeholder = new Label(
+                    "Todavía no has seleccionado ningún vector.");
+
+            placeholder.setWrapText(true);
+            placeholder.getStyleClass()
+                    .add("explanation-placeholder");
+
+            explanationContainer
+                    .getChildren()
+                    .add(placeholder);
+        } else {
+            for (VectorAdditionStep step : explanation.steps()) {
+                explanationContainer
+                        .getChildren()
+                        .add(createStepView(step));
+            }
+        }
+
+        explanationSummaryLabel.setText(
+                explanation.summary());
+
+        explanationSummaryLabel.setVisible(true);
+        explanationSummaryLabel.setManaged(true);
+
+        setExplanationSummaryStyle(
+                explanation.status());
+    }
+
+    /**
+     * Creates the JavaFX representation of one vector addition.
+     *
+     * @param step vector addition to display
+     * @return view containing its number and equation
+     */
+    private VBox createStepView(
+            VectorAdditionStep step) {
+        Label stepNumber = new Label(
+                "Paso " + step.stepNumber());
+
+        stepNumber.getStyleClass()
+                .add("explanation-step-number");
+
+        Label equation = new Label(
+                step.equation());
+
+        equation.setWrapText(true);
+        equation.getStyleClass()
+                .add("explanation-equation");
+
+        VBox stepView = new VBox(
+                3,
+                stepNumber,
+                equation);
+
+        stepView.getStyleClass()
+                .add("explanation-step");
+
+        return stepView;
+    }
+
+    /**
+     * Clears the previous explanation after the current attempt changes.
+     */
+    private void clearExplanation() {
+        explanationContainer.getChildren().clear();
+
+        Label placeholder = new Label(
+                "Comprueba tu secuencia para ver la explicación.");
+
+        placeholder.setWrapText(true);
+        placeholder.getStyleClass()
+                .add("explanation-placeholder");
+
+        explanationContainer
+                .getChildren()
+                .add(placeholder);
+
+        explanationSummaryLabel.setText("");
+        explanationSummaryLabel.setVisible(false);
+        explanationSummaryLabel.setManaged(false);
+
+        explanationSummaryLabel
+                .getStyleClass()
+                .removeAll(
+                        "explanation-summary-solved",
+                        "explanation-summary-incomplete",
+                        "explanation-summary-error");
+    }
+
+    /**
+     * Applies a visual style to the explanation summary.
+     *
+     * @param status result of the explained attempt
+     */
+    private void setExplanationSummaryStyle(
+            ChallengeStatus status) {
+        explanationSummaryLabel
+                .getStyleClass()
+                .removeAll(
+                        "explanation-summary-solved",
+                        "explanation-summary-incomplete",
+                        "explanation-summary-error");
+
+        String styleClass = switch (status) {
+            case SOLVED ->
+                "explanation-summary-solved";
+
+            case INCOMPLETE ->
+                "explanation-summary-incomplete";
+
+            case INVALID_MOVE, STEP_LIMIT_EXCEEDED ->
+                "explanation-summary-error";
+        };
+
+        explanationSummaryLabel
+                .getStyleClass()
                 .add(styleClass);
     }
 }

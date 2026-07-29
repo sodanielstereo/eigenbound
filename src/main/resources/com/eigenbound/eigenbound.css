@@ -212,3 +212,57 @@
     -fx-background-color: #3d2028;
     -fx-text-fill: #ff879d;
 }
+/* Step-by-step educational explanation */
+
+.explanation-card {
+    -fx-background-color: #151d2d;
+    -fx-background-radius: 8px;
+    -fx-border-color: #303c54;
+    -fx-border-radius: 8px;
+    -fx-padding: 10px;
+}
+
+.explanation-placeholder {
+    -fx-text-fill: #8794ad;
+    -fx-font-size: 12px;
+    -fx-font-style: italic;
+}
+
+.explanation-step {
+    -fx-background-color: #1d2739;
+    -fx-background-radius: 6px;
+    -fx-padding: 8px;
+}
+
+.explanation-step-number {
+    -fx-text-fill: #a879ff;
+    -fx-font-size: 10px;
+    -fx-font-weight: bold;
+}
+
+.explanation-equation {
+    -fx-text-fill: #dce4f5;
+    -fx-font-family: "Consolas";
+    -fx-font-size: 12px;
+}
+
+.explanation-summary {
+    -fx-background-radius: 7px;
+    -fx-padding: 10px;
+    -fx-font-size: 12px;
+}
+
+.explanation-summary-solved {
+    -fx-background-color: #17362f;
+    -fx-text-fill: #69e0b5;
+}
+
+.explanation-summary-incomplete {
+    -fx-background-color: #3b321b;
+    -fx-text-fill: #f4c95d;
+}
+
+.explanation-summary-error {
+    -fx-background-color: #3d2028;
+    -fx-text-fill: #ff879d;
+}
