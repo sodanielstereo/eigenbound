@@ -26,17 +26,17 @@
             styleClass="root-pane">
   <top>
     <VBox spacing="5.0"
-                  styleClass="header">
+                      styleClass="header">
       <padding>
         <Insets top="18.0"
-                                right="24.0"
-                                bottom="18.0"
-                                left="24.0"/>
+                                        right="24.0"
+                                        bottom="18.0"
+                                        left="24.0"/>
       </padding>
       <Label text="EIGENBOUND"
-                         styleClass="game-title"/>
+                               styleClass="game-title"/>
       <Label text="Valle de los Vectores · Estabiliza el portal mediante combinaciones lineales"
-                         styleClass="game-subtitle"/>
+                               styleClass="game-subtitle"/>
     </VBox>
   </top>
 
@@ -44,9 +44,9 @@
     <StackPane styleClass="canvas-container">
       <padding>
         <Insets top="18.0"
-                                right="18.0"
-                                bottom="18.0"
-                                left="18.0"/>
+                                        right="18.0"
+                                        bottom="18.0"
+                                        left="18.0"/>
       </padding>
       <VectorCanvas fx:id="vectorCanvas"/>
     </StackPane>
@@ -58,116 +58,121 @@
             becoming clipped on displays with limited vertical space.
         -->
     <ScrollPane fitToWidth="true"
-                        hbarPolicy="NEVER"
-                        prefWidth="340.0"
-                        minWidth="320.0"
-                        styleClass="control-scroll">
+                            hbarPolicy="NEVER"
+                            prefWidth="340.0"
+                            minWidth="320.0"
+                            styleClass="control-scroll">
       <content>
         <VBox spacing="14.0"
-                              styleClass="control-panel">
+                                      styleClass="control-panel">
           <padding>
             <Insets top="20.0"
-                                            right="20.0"
-                                            bottom="20.0"
-                                            left="20.0"/>
+                                                        right="20.0"
+                                                        bottom="20.0"
+                                                        left="20.0"/>
           </padding>
+          <!-- Navigation back to the expedition map -->
+          <Button text="← VOLVER AL MAPA"
+                            onAction="#onReturnToExpeditionMap"
+                            maxWidth="Infinity"
+                            styleClass="secondary-button"/>
           <!-- Expedition configuration -->
           <Label text="EXPEDICIÓN"
-                                     styleClass="section-title"/>
+                                               styleClass="section-title"/>
           <HBox spacing="8.0">
             <Button text="−"
-                                            onAction="#onDecreaseDifficulty"
-                                            styleClass="small-button"/>
+                                                        onAction="#onDecreaseDifficulty"
+                                                        styleClass="small-button"/>
             <Label fx:id="difficultyLabel"
-                                           text="Dificultad: 1"
-                                           styleClass="information-label"/>
+                                                       text="Dificultad: 1"
+                                                       styleClass="information-label"/>
             <Button text="+"
-                                            onAction="#onIncreaseDifficulty"
-                                            styleClass="small-button"/>
+                                                        onAction="#onIncreaseDifficulty"
+                                                        styleClass="small-button"/>
           </HBox>
           <Label fx:id="seedLabel"
-                                     text="Semilla:"
-                                     styleClass="secondary-label"/>
+                                               text="Semilla:"
+                                               styleClass="secondary-label"/>
           <!-- Current challenge information -->
           <VBox spacing="5.0"
-                                    styleClass="information-card">
+                                              styleClass="information-card">
             <Label fx:id="targetLabel"
-                                           text="Objetivo:"
-                                           styleClass="target-label"/>
+                                                       text="Objetivo:"
+                                                       styleClass="target-label"/>
             <Label fx:id="positionLabel"
-                                           text="Posición:"
-                                           styleClass="position-label"/>
+                                                       text="Posición:"
+                                                       styleClass="position-label"/>
             <Label fx:id="stepsLabel"
-                                           text="Movimientos restantes:"
-                                           styleClass="information-label"/>
+                                                       text="Movimientos restantes:"
+                                                       styleClass="information-label"/>
           </VBox>
           <!-- Available vector movements -->
           <Label text="VECTORES DISPONIBLES"
-                                     styleClass="section-title"/>
+                                               styleClass="section-title"/>
           <VBox fx:id="movementButtonContainer"
-                                    spacing="8.0"/>
+                                              spacing="8.0"/>
           <Label fx:id="selectedMovesLabel"
-                                     text="Secuencia: ninguna"
-                                     wrapText="true"
-                                     styleClass="sequence-label"/>
+                                               text="Secuencia: ninguna"
+                                               wrapText="true"
+                                               styleClass="sequence-label"/>
           <!-- Progressive hint system -->
           <Label text="SISTEMA DE PISTAS"
-                                     styleClass="section-title"/>
+                                               styleClass="section-title"/>
           <VBox spacing="8.0"
-                                    styleClass="hint-card">
+                                              styleClass="hint-card">
             <Label fx:id="hintLabel"
-                                           text="Las pistas aparecerán de forma progresiva."
-                                           wrapText="true"
-                                           styleClass="hint-label"/>
+                                                       text="Las pistas aparecerán de forma progresiva."
+                                                       wrapText="true"
+                                                       styleClass="hint-label"/>
             <Button fx:id="hintButton"
-                                            text="PISTA 1/4"
-                                            onAction="#onHint"
-                                            maxWidth="Infinity"
-                                            styleClass="hint-button"/>
+                                                        text="PISTA 1/4"
+                                                        onAction="#onHint"
+                                                        maxWidth="Infinity"
+                                                        styleClass="hint-button"/>
           </VBox>
           <!-- Attempt controls -->
           <HBox spacing="8.0">
             <Button fx:id="undoButton"
-                                            text="Deshacer"
-                                            onAction="#onUndo"
-                                            maxWidth="Infinity"
-                                            HBox.hgrow="ALWAYS"
-                                            styleClass="secondary-button"/>
+                                                        text="Deshacer"
+                                                        onAction="#onUndo"
+                                                        maxWidth="Infinity"
+                                                        HBox.hgrow="ALWAYS"
+                                                        styleClass="secondary-button"/>
             <Button text="Reiniciar"
-                                            onAction="#onReset"
-                                            maxWidth="Infinity"
-                                            HBox.hgrow="ALWAYS"
-                                            styleClass="secondary-button"/>
+                                                        onAction="#onReset"
+                                                        maxWidth="Infinity"
+                                                        HBox.hgrow="ALWAYS"
+                                                        styleClass="secondary-button"/>
           </HBox>
           <Button text="COMPROBAR"
-                                      onAction="#onCheck"
-                                      maxWidth="Infinity"
-                                      styleClass="primary-button"/>
+                                                onAction="#onCheck"
+                                                maxWidth="Infinity"
+                                                styleClass="primary-button"/>
           <!-- Step-by-step educational explanation -->
           <Label text="CÓMO FUNCIONÓ"
-                                     styleClass="section-title"/>
+                                               styleClass="section-title"/>
           <VBox fx:id="explanationContainer"
-                                    spacing="7.0"
-                                    styleClass="explanation-card">
+                                              spacing="7.0"
+                                              styleClass="explanation-card">
             <Label text="Comprueba tu secuencia para ver la explicación."
-                                           wrapText="true"
-                                           styleClass="explanation-placeholder"/>
+                                                       wrapText="true"
+                                                       styleClass="explanation-placeholder"/>
           </VBox>
           <Label fx:id="explanationSummaryLabel"
-                                     text=""
-                                     wrapText="true"
-                                     visible="false"
-                                     managed="false"
-                                     styleClass="explanation-summary"/>
+                                               text=""
+                                               wrapText="true"
+                                               visible="false"
+                                               managed="false"
+                                               styleClass="explanation-summary"/>
           <!-- Challenge navigation -->
           <Button text="NUEVO DESAFÍO"
-                                      onAction="#onNewChallenge"
-                                      maxWidth="Infinity"
-                                      styleClass="secondary-button"/>
+                                                onAction="#onNewChallenge"
+                                                maxWidth="Infinity"
+                                                styleClass="secondary-button"/>
           <Label fx:id="statusLabel"
-                                     text="Combina los vectores para alcanzar el portal."
-                                     wrapText="true"
-                                     styleClass="status-neutral"/>
+                                               text="Combina los vectores para alcanzar el portal."
+                                               wrapText="true"
+                                               styleClass="status-neutral"/>
         </VBox>
       </content>
     </ScrollPane>

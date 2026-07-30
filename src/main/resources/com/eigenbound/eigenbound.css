@@ -266,3 +266,64 @@
     -fx-background-color: #3d2028;
     -fx-text-fill: #ff879d;
 }
+/* Expedition map statistics */
+
+.map-stat-card {
+    -fx-background-color: #192133;
+    -fx-background-radius: 8px;
+    -fx-border-color: #293247;
+    -fx-border-radius: 8px;
+    -fx-padding: 12px;
+}
+
+/* Expedition room legend */
+
+.map-legend {
+    -fx-background-color: #151d2d;
+    -fx-background-radius: 8px;
+    -fx-border-color: #303c54;
+    -fx-border-radius: 8px;
+    -fx-padding: 12px;
+}
+
+.legend-start,
+.legend-vector,
+.legend-elite,
+.legend-rest,
+.legend-reward,
+.legend-boss {
+    -fx-font-size: 13px;
+    -fx-font-weight: bold;
+}
+
+.legend-start {
+    -fx-text-fill: #46a6ff;
+}
+
+.legend-vector {
+    -fx-text-fill: #8d5cff;
+}
+
+.legend-elite {
+    -fx-text-fill: #d85cff;
+}
+
+.legend-rest {
+    -fx-text-fill: #55d6a8;
+}
+
+.legend-reward {
+    -fx-text-fill: #f4c95d;
+}
+
+.legend-boss {
+    -fx-text-fill: #ff667d;
+}
+
+.map-explanation {
+    -fx-background-color: #18233a;
+    -fx-background-radius: 7px;
+    -fx-text-fill: #b8c9e8;
+    -fx-font-size: 12px;
+    -fx-padding: 10px;
+}
