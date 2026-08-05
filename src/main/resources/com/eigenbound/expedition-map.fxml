@@ -10,10 +10,11 @@
 <?import javafx.scene.layout.StackPane?>
 <?import javafx.scene.layout.VBox?>
 <!--
-    Procedural expedition graph screen.
+    Interactive procedural expedition graph screen.
 
     The center displays the generated graph, while the side panel contains
-    generation settings, Warshall analysis and the room legend.
+    generation settings, player progress, Warshall analysis and the room
+    legend.
 -->
 
 <BorderPane xmlns="http://javafx.com/javafx"
@@ -25,17 +26,17 @@
             styleClass="root-pane">
   <top>
     <VBox spacing="5.0"
-                  styleClass="header">
+              styleClass="header">
       <padding>
         <Insets top="18.0"
-                                right="24.0"
-                                bottom="18.0"
-                                left="24.0"/>
+                        right="24.0"
+                        bottom="18.0"
+                        left="24.0"/>
       </padding>
       <Label text="EIGENBOUND"
-                         styleClass="game-title"/>
+                   styleClass="game-title"/>
       <Label text="Mapa de Expedición · Elige tu ruta hacia el núcleo"
-                         styleClass="game-subtitle"/>
+                   styleClass="game-subtitle"/>
     </VBox>
   </top>
 
@@ -43,9 +44,9 @@
     <StackPane styleClass="canvas-container">
       <padding>
         <Insets top="18.0"
-                                right="18.0"
-                                bottom="18.0"
-                                left="18.0"/>
+                        right="18.0"
+                        bottom="18.0"
+                        left="18.0"/>
       </padding>
       <ExpeditionMapCanvas fx:id="expeditionCanvas"/>
     </StackPane>
@@ -53,81 +54,100 @@
 
   <right>
     <ScrollPane fitToWidth="true"
-                        hbarPolicy="NEVER"
-                        prefWidth="330.0"
-                        minWidth="310.0"
-                        styleClass="control-scroll">
+                    hbarPolicy="NEVER"
+                    prefWidth="330.0"
+                    minWidth="310.0"
+                    styleClass="control-scroll">
       <content>
         <VBox spacing="14.0"
-                              styleClass="control-panel">
+                      styleClass="control-panel">
           <padding>
             <Insets top="20.0"
-                                            right="20.0"
-                                            bottom="20.0"
-                                            left="20.0"/>
+                                right="20.0"
+                                bottom="20.0"
+                                left="20.0"/>
           </padding>
           <Label text="GENERACIÓN"
-                                     styleClass="section-title"/>
+                           styleClass="section-title"/>
           <HBox spacing="8.0">
             <Button text="−"
-                                            onAction="#onDecreaseDifficulty"
-                                            styleClass="small-button"/>
+                                onAction="#onDecreaseDifficulty"
+                                styleClass="small-button"/>
             <Label fx:id="difficultyLabel"
-                                           text="Dificultad: 1"
-                                           styleClass="information-label"/>
+                               text="Dificultad: 1"
+                               styleClass="information-label"/>
             <Button text="+"
-                                            onAction="#onIncreaseDifficulty"
-                                            styleClass="small-button"/>
+                                onAction="#onIncreaseDifficulty"
+                                styleClass="small-button"/>
           </HBox>
           <Label fx:id="seedLabel"
-                                     text="Semilla:"
-                                     styleClass="secondary-label"/>
+                           text="Semilla:"
+                           styleClass="secondary-label"/>
           <Button text="GENERAR NUEVA EXPEDICIÓN"
-                                      onAction="#onNewExpedition"
-                                      maxWidth="Infinity"
-                                      styleClass="secondary-button"/>
-          <Label text="ANÁLISIS DEL GRAFO"
-                                     styleClass="section-title"/>
+                            onAction="#onNewExpedition"
+                            maxWidth="Infinity"
+                            styleClass="secondary-button"/>
+          <Label text="PROGRESO"
+                           styleClass="section-title"/>
           <VBox spacing="7.0"
-                                    styleClass="map-stat-card">
+                          styleClass="map-stat-card">
+            <Label fx:id="currentRoomLabel"
+                               text="Habitación actual:"
+                               wrapText="true"
+                               styleClass="information-label"/>
+            <Label fx:id="visitedRoomsLabel"
+                               text="Habitaciones visitadas:"
+                               styleClass="information-label"/>
+            <Label fx:id="availableRoomsLabel"
+                               text="Opciones disponibles:"
+                               styleClass="information-label"/>
+          </VBox>
+          <Label fx:id="expeditionStatusLabel"
+                           text="Selecciona una habitación resaltada para avanzar."
+                           wrapText="true"
+                           styleClass="status-neutral"/>
+          <Label text="ANÁLISIS DEL GRAFO"
+                           styleClass="section-title"/>
+          <VBox spacing="7.0"
+                          styleClass="map-stat-card">
             <Label fx:id="roomCountLabel"
-                                           text="Habitaciones:"
-                                           styleClass="information-label"/>
+                               text="Habitaciones:"
+                               styleClass="information-label"/>
             <Label fx:id="routeCountLabel"
-                                           text="Rutas:"
-                                           styleClass="information-label"/>
+                               text="Rutas:"
+                               styleClass="information-label"/>
             <Label fx:id="reachableCountLabel"
-                                           text="Accesibles desde el inicio:"
-                                           wrapText="true"
-                                           styleClass="information-label"/>
+                               text="Accesibles desde el inicio:"
+                               wrapText="true"
+                               styleClass="information-label"/>
             <Label fx:id="bossLayerLabel"
-                                           text="Capas hasta el jefe:"
-                                           styleClass="information-label"/>
+                               text="Capas hasta el jefe:"
+                               styleClass="information-label"/>
           </VBox>
           <Label text="TIPOS DE HABITACIÓN"
-                                     styleClass="section-title"/>
+                           styleClass="section-title"/>
           <VBox spacing="8.0"
-                                    styleClass="map-legend">
+                          styleClass="map-legend">
             <Label text="●  Inicio"
-                                           styleClass="legend-start"/>
+                               styleClass="legend-start"/>
             <Label text="●  Desafío vectorial"
-                                           styleClass="legend-vector"/>
+                               styleClass="legend-vector"/>
             <Label text="●  Desafío élite"
-                                           styleClass="legend-elite"/>
+                               styleClass="legend-elite"/>
             <Label text="●  Descanso"
-                                           styleClass="legend-rest"/>
+                               styleClass="legend-rest"/>
             <Label text="●  Recompensa"
-                                           styleClass="legend-reward"/>
+                               styleClass="legend-reward"/>
             <Label text="●  Jefe"
-                                           styleClass="legend-boss"/>
+                               styleClass="legend-boss"/>
           </VBox>
-          <Label text="Las flechas representan rutas dirigidas. Warshall verifica qué habitaciones pueden alcanzarse desde cada punto."
-                                     wrapText="true"
-                                     styleClass="map-explanation"/>
+          <Label text="Las flechas representan rutas dirigidas. Las rutas amarillas están disponibles, las verdes ya fueron recorridas y las oscuras permanecen bloqueadas."
+                           wrapText="true"
+                           styleClass="map-explanation"/>
           <Button text="ENTRAR AL VALLE DE LOS VECTORES"
-                                      onAction="#onEnterVectorLaboratory"
-                                      maxWidth="Infinity"
-                                      styleClass="primary-button"/>
+                            onAction="#onEnterVectorLaboratory"
+                            maxWidth="Infinity"
+                            styleClass="primary-button"/>
         </VBox>
       </content>
     </ScrollPane>
