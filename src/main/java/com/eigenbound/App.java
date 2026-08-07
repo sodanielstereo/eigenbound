@@ -2,6 +2,8 @@ package com.eigenbound;
 
 import java.io.IOException;
 
+import com.eigenbound.application.session.GameContext;
+
 import javafx.application.Application;
 import javafx.fxml.FXMLLoader;
 import javafx.scene.Parent;
@@ -16,7 +18,18 @@ public class App extends Application {
     private static final double WINDOW_WIDTH = 1180;
     private static final double WINDOW_HEIGHT = 720;
 
+    private static final GameContext GAME_CONTEXT = new GameContext();
+
     private static Scene scene;
+
+    /**
+     * Returns the application context shared by JavaFX controllers.
+     *
+     * @return shared game context
+     */
+    public static GameContext gameContext() {
+        return GAME_CONTEXT;
+    }
 
     /**
      * Creates the primary scene and opens the expedition map.
