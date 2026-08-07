@@ -13,9 +13,11 @@ import com.eigenbound.application.hint.HintLevel;
 import com.eigenbound.application.hint.VectorHint;
 import com.eigenbound.application.hint.VectorHintService;
 import com.eigenbound.application.session.ChallengeSession;
+import com.eigenbound.application.session.ExpeditionRun;
 import com.eigenbound.domain.challenge.ChallengeResult;
 import com.eigenbound.domain.challenge.ChallengeStatus;
 import com.eigenbound.domain.challenge.VectorChallenge;
+import com.eigenbound.domain.expedition.ExpeditionNode;
 import com.eigenbound.domain.generation.GeneratedVectorChallenge;
 import com.eigenbound.domain.generation.VectorChallengeGenerator;
 import com.eigenbound.domain.math.Vector2;
@@ -62,9 +64,12 @@ public final class VectorLaboratoryController {
         private final List<Button> movementButtons = new ArrayList<>();
 
         private ChallengeSession session;
+        private ExpeditionRun expeditionRun;
         private long currentSeed = INITIAL_SEED;
         private int difficulty = INITIAL_DIFFICULTY;
         private int currentHintIndex;
+        private boolean expeditionChallengeMode;
+        private boolean challengeSolved;
 
         @FXML
         private VectorCanvas vectorCanvas;
@@ -109,7 +114,33 @@ public final class VectorLaboratoryController {
         private Label explanationSummaryLabel;
 
         @FXML
+        private Label modeLabel;
+
+        @FXML
+        private Label roomContextLabel;
+
+        @FXML
+        private Button returnButton;
+
+        @FXML
+        private Button decreaseDifficultyButton;
+
+        @FXML
+        private Button increaseDifficultyButton;
+
+        @FXML
+        private Button newChallengeButton;
+
+        @FXML
         private void onReturnToExpeditionMap() throws IOException {
+                if (expeditionChallengeMode) {
+                        if (challengeSolved) {
+                                expeditionRun.completePendingRoom();
+                        } else {
+                                expeditionRun.cancelPendingRoom();
+                        }
+                }
+
                 App.setRoot("expedition-map");
         }
 
@@ -118,6 +149,7 @@ public final class VectorLaboratoryController {
          */
         @FXML
         private void initialize() {
+                configureMode();
                 loadChallenge();
         }
 
@@ -127,10 +159,12 @@ public final class VectorLaboratoryController {
         @FXML
         private void onUndo() {
                 session.undo();
+                challengeSolved = false;
                 clearStatus();
                 resetHints();
                 clearExplanation();
                 refreshView();
+                updateReturnButton();
         }
 
         /**
@@ -139,10 +173,12 @@ public final class VectorLaboratoryController {
         @FXML
         private void onReset() {
                 session.reset();
+                challengeSolved = false;
                 clearStatus();
                 resetHints();
                 clearExplanation();
                 refreshView();
+                updateReturnButton();
         }
 
         /**
@@ -155,12 +191,18 @@ public final class VectorLaboratoryController {
 
                 switch (result.status()) {
                         case SOLVED -> {
+                                challengeSolved = true;
+
                                 statusLabel.setText(
-                                                "¡Portal estabilizado! Alcanzaste el objetivo.");
+                                                expeditionChallengeMode
+                                                                ? "¡Portal estabilizado! Ya puedes continuar la expedición."
+                                                                : "¡Portal estabilizado! Alcanzaste el objetivo.");
                                 setStatusStyle("status-solved");
                         }
 
                         case INCOMPLETE -> {
+                                challengeSolved = false;
+
                                 statusLabel.setText(
                                                 "Aún no alcanzas el objetivo. "
                                                                 + "Observa la dirección resultante.");
@@ -168,12 +210,16 @@ public final class VectorLaboratoryController {
                         }
 
                         case INVALID_MOVE -> {
+                                challengeSolved = false;
+
                                 statusLabel.setText(
                                                 "La secuencia contiene un movimiento inválido.");
                                 setStatusStyle("status-error");
                         }
 
                         case STEP_LIMIT_EXCEEDED -> {
+                                challengeSolved = false;
+
                                 statusLabel.setText(
                                                 "Superaste el límite de movimientos.");
                                 setStatusStyle("status-error");
@@ -181,6 +227,7 @@ public final class VectorLaboratoryController {
                 }
 
                 showExplanation();
+                updateReturnButton();
         }
 
         /**
@@ -217,7 +264,11 @@ public final class VectorLaboratoryController {
          */
         @FXML
         private void onNewChallenge() {
-                currentSeed++;
+                if (expeditionChallengeMode) {
+                        return;
+                }
+
+                advanceSeed();
                 loadChallenge();
         }
 
@@ -226,9 +277,10 @@ public final class VectorLaboratoryController {
          */
         @FXML
         private void onIncreaseDifficulty() {
-                if (difficulty < 5) {
+                if (!expeditionChallengeMode
+                                && difficulty < 5) {
                         difficulty++;
-                        currentSeed++;
+                        advanceSeed();
                         loadChallenge();
                 }
         }
@@ -238,9 +290,10 @@ public final class VectorLaboratoryController {
          */
         @FXML
         private void onDecreaseDifficulty() {
-                if (difficulty > 1) {
+                if (!expeditionChallengeMode
+                                && difficulty > 1) {
                         difficulty--;
-                        currentSeed++;
+                        advanceSeed();
                         loadChallenge();
                 }
         }
@@ -257,6 +310,8 @@ public final class VectorLaboratoryController {
                 session = new ChallengeSession(
                                 generated.challenge());
 
+                challengeSolved = false;
+
                 vectorCanvas.setChallenge(
                                 generated.challenge());
 
@@ -267,6 +322,7 @@ public final class VectorLaboratoryController {
                 resetHints();
                 clearExplanation();
                 refreshView();
+                updateReturnButton();
         }
 
         /**
@@ -315,10 +371,12 @@ public final class VectorLaboratoryController {
          */
         private void selectMovement(Vector2 movement) {
                 session.selectMove(movement);
+                challengeSolved = false;
                 clearStatus();
                 resetHints();
                 clearExplanation();
                 refreshView();
+                updateReturnButton();
         }
 
         /**
@@ -328,7 +386,9 @@ public final class VectorLaboratoryController {
                 VectorChallenge challenge = session.challenge();
 
                 seedLabel.setText(
-                                "Semilla: " + currentSeed);
+                                expeditionChallengeMode
+                                                ? "Semilla de sala: " + currentSeed
+                                                : "Semilla: " + currentSeed);
 
                 difficultyLabel.setText(
                                 "Dificultad: " + difficulty);
@@ -500,8 +560,106 @@ public final class VectorLaboratoryController {
          */
         private void clearStatus() {
                 statusLabel.setText(
-                                "Combina los vectores para alcanzar el portal.");
+                                expeditionChallengeMode
+                                                ? "Resuelve esta sala para avanzar por la expedición."
+                                                : "Combina los vectores para alcanzar el portal.");
                 setStatusStyle("status-neutral");
+        }
+
+        /**
+         * Configures either an expedition challenge or a free-practice session.
+         */
+        private void configureMode() {
+                if (App.gameContext().hasActiveExpeditionRun()) {
+                        ExpeditionRun activeRun = App.gameContext()
+                                        .requireActiveExpeditionRun();
+
+                        if (activeRun.hasPendingRoom()) {
+                                configureExpeditionChallenge(activeRun);
+                                return;
+                        }
+                }
+
+                configureFreePractice();
+        }
+
+        /**
+         * Loads generation settings from the room selected on the map.
+         */
+        private void configureExpeditionChallenge(
+                        ExpeditionRun activeRun) {
+                expeditionChallengeMode = true;
+                expeditionRun = activeRun;
+
+                ExpeditionNode room = activeRun
+                                .pendingRoom()
+                                .orElseThrow();
+
+                currentSeed = activeRun.pendingChallengeSeed();
+                difficulty = room.difficulty();
+
+                modeLabel.setText("SALA DE EXPEDICIÓN");
+                roomContextLabel.setText(
+                                "Expedición: "
+                                                + activeRun.seed()
+                                                + " · Sala: "
+                                                + room.id());
+
+                setDifficultyButtonsVisible(false);
+                newChallengeButton.setVisible(false);
+                newChallengeButton.setManaged(false);
+        }
+
+        /**
+         * Restores the laboratory's independent challenge-generation controls.
+         */
+        private void configureFreePractice() {
+                expeditionChallengeMode = false;
+                expeditionRun = null;
+
+                modeLabel.setText("PRÁCTICA LIBRE");
+                roomContextLabel.setText(
+                                "Entrena combinaciones lineales fuera de la expedición.");
+
+                setDifficultyButtonsVisible(true);
+                newChallengeButton.setVisible(true);
+                newChallengeButton.setManaged(true);
+        }
+
+        /**
+         * Shows or hides the free-practice difficulty buttons.
+         */
+        private void setDifficultyButtonsVisible(
+                        boolean visible) {
+                decreaseDifficultyButton.setVisible(visible);
+                decreaseDifficultyButton.setManaged(visible);
+
+                increaseDifficultyButton.setVisible(visible);
+                increaseDifficultyButton.setManaged(visible);
+        }
+
+        /**
+         * Updates navigation according to the current challenge state.
+         */
+        private void updateReturnButton() {
+                if (!expeditionChallengeMode) {
+                        returnButton.setText("← VOLVER AL MAPA");
+                        return;
+                }
+
+                returnButton.setText(
+                                challengeSolved
+                                                ? "CONTINUAR EXPEDICIÓN"
+                                                : "CANCELAR Y VOLVER AL MAPA");
+        }
+
+        /**
+         * Advances a deterministic seed without relying on silent long overflow.
+         */
+        private void advanceSeed() {
+                currentSeed = currentSeed == Long.MAX_VALUE
+                                ? Long.MIN_VALUE
+                                : currentSeed + 1;
         }
 
         /**

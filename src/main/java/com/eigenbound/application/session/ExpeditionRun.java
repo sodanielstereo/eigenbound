@@ -29,11 +29,9 @@ public final class ExpeditionRun {
      */
     public ExpeditionRun(
             GeneratedExpedition generatedExpedition) {
-
         this.generatedExpedition = Objects.requireNonNull(
                 generatedExpedition,
                 "Generated expedition cannot be null");
-
         this.expeditionSession = new ExpeditionSession(
                 generatedExpedition.map());
     }
@@ -77,16 +75,42 @@ public final class ExpeditionRun {
     /**
      * Indicates whether a selected room is waiting to be resolved.
      *
-     * @return true when the run contains a pending room
+     * @return {@code true} when the run contains a pending room
      */
     public boolean hasPendingRoom() {
         return pendingRoom != null;
     }
 
     /**
+     * Derives a deterministic challenge seed for the pending room.
+     *
+     * <p>
+     * Bitwise XOR combines the expedition seed with the unsigned room ID hash.
+     * The operation cannot overflow and always produces the same challenge seed
+     * for the same expedition and room.
+     * </p>
+     *
+     * @return deterministic seed for the pending room challenge
+     * @throws IllegalStateException when no room is currently pending
+     */
+    public long pendingChallengeSeed() {
+        ExpeditionNode room = requirePendingRoom();
+
+        long roomHash = Integer.toUnsignedLong(
+                room.id().hashCode());
+
+        return seed() ^ roomHash;
+    }
+
+    /**
      * Selects an available room without committing the movement yet.
      *
      * @param nodeId identifier of the selected room
+     * @throws NullPointerException     when the node identifier is null
+     * @throws IllegalStateException    when another room is already pending or
+     *                                  the expedition is complete
+     * @throws IllegalArgumentException when the room is not available from the
+     *                                  current position
      */
     public void selectRoom(String nodeId) {
         Objects.requireNonNull(
@@ -115,6 +139,8 @@ public final class ExpeditionRun {
 
     /**
      * Commits the movement to the pending room.
+     *
+     * @throws IllegalStateException when no room is waiting to be completed
      */
     public void completePendingRoom() {
         ExpeditionNode room = requirePendingRoom();
@@ -125,6 +151,8 @@ public final class ExpeditionRun {
 
     /**
      * Discards the pending room without changing expedition progress.
+     *
+     * @throws IllegalStateException when no room is waiting to be cancelled
      */
     public void cancelPendingRoom() {
         requirePendingRoom();
