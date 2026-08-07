@@ -3,6 +3,7 @@ package com.eigenbound.presentation.expedition;
 import java.io.IOException;
 
 import com.eigenbound.App;
+import com.eigenbound.application.session.ExpeditionRun;
 import com.eigenbound.application.session.ExpeditionSession;
 import com.eigenbound.domain.expedition.ExpeditionMap;
 import com.eigenbound.domain.expedition.ExpeditionNode;
@@ -39,6 +40,8 @@ public final class ExpeditionMapController {
         private long currentSeed = INITIAL_SEED;
 
         private int difficulty = MIN_DIFFICULTY;
+
+        private ExpeditionRun expeditionRun;
 
         private ExpeditionSession expeditionSession;
 
@@ -84,7 +87,11 @@ public final class ExpeditionMapController {
                 expeditionCanvas.setOnNodeSelected(
                                 this::handleNodeSelection);
 
-                generateExpedition();
+                if (App.gameContext().hasActiveExpeditionRun()) {
+                        restoreExpedition();
+                } else {
+                        generateExpedition();
+                }
         }
 
         /**
@@ -136,8 +143,14 @@ public final class ExpeditionMapController {
          *
          * @param nodeId identifier of the selected room
          */
+        /**
+         * Handles a node selected through the expedition canvas.
+         *
+         * @param nodeId identifier of the selected room
+         */
         private void handleNodeSelection(
                         String nodeId) {
+
                 if (expeditionSession == null) {
                         return;
                 }
@@ -150,20 +163,23 @@ public final class ExpeditionMapController {
                         return;
                 }
 
-                expeditionSession.moveTo(nodeId);
+                ExpeditionNode selectedNode = expeditionSession
+                                .map()
+                                .findNode(nodeId);
+
+                expeditionRun.selectRoom(nodeId);
+
+                if (requiresChallenge(selectedNode.type())) {
+                        openPendingChallenge();
+                        return;
+                }
+
+                expeditionRun.completePendingRoom();
 
                 expeditionCanvas.redraw();
                 updateProgressLabels();
 
                 ExpeditionNode currentNode = expeditionSession.currentNode();
-
-                if (expeditionSession.isCompleted()) {
-                        setExpeditionStatus(
-                                        "Llegaste al jefe. Expedición completada.",
-                                        "status-solved");
-
-                        return;
-                }
 
                 setExpeditionStatus(
                                 "Entraste a "
@@ -184,7 +200,11 @@ public final class ExpeditionMapController {
 
                 ReachabilityMatrix reachability = analyzer.analyze(map);
 
-                expeditionSession = new ExpeditionSession(map);
+                expeditionRun = App.gameContext()
+                                .startExpedition(generated);
+
+                expeditionSession = expeditionRun
+                                .expeditionSession();
 
                 expeditionCanvas.setExpeditionSession(
                                 expeditionSession);
@@ -198,6 +218,58 @@ public final class ExpeditionMapController {
                 setExpeditionStatus(
                                 "Selecciona una habitación resaltada para avanzar.",
                                 "status-neutral");
+        }
+
+        /**
+         * Opens the laboratory for the currently pending challenge room.
+         */
+        private void openPendingChallenge() {
+                try {
+                        App.setRoot("vector-laboratory");
+                } catch (IOException exception) {
+                        expeditionRun.cancelPendingRoom();
+
+                        setExpeditionStatus(
+                                        "No fue posible abrir el desafío. Inténtalo nuevamente.",
+                                        "status-error");
+                }
+        }
+
+        /**
+         * Restores the active expedition after returning from another view.
+         */
+        private void restoreExpedition() {
+                expeditionRun = App.gameContext()
+                                .requireActiveExpeditionRun();
+
+                expeditionSession = expeditionRun
+                                .expeditionSession();
+
+                currentSeed = expeditionRun.seed();
+                difficulty = expeditionRun.difficulty();
+
+                ExpeditionMap map = expeditionSession.map();
+
+                ReachabilityMatrix reachability = analyzer.analyze(map);
+
+                expeditionCanvas.setExpeditionSession(
+                                expeditionSession);
+
+                updateGenerationLabels(
+                                map,
+                                reachability);
+
+                updateProgressLabels();
+
+                if (expeditionSession.isCompleted()) {
+                        setExpeditionStatus(
+                                        "Expedición completada. Puedes generar una nueva.",
+                                        "status-solved");
+                } else {
+                        setExpeditionStatus(
+                                        "Expedición restaurada. Elige una ruta disponible para continuar.",
+                                        "status-neutral");
+                }
         }
 
         /**
@@ -319,5 +391,27 @@ public final class ExpeditionMapController {
                 currentSeed = currentSeed == Long.MAX_VALUE
                                 ? Long.MIN_VALUE
                                 : currentSeed + 1;
+        }
+
+        /**
+         * Determines whether a room must be resolved in the laboratory.
+         *
+         * @param type selected room type
+         * @return true when the room contains a playable challenge
+         */
+        private boolean requiresChallenge(
+                        RoomType type) {
+
+                return switch (type) {
+                        case VECTOR_CHALLENGE,
+                                        ELITE_CHALLENGE,
+                                        BOSS ->
+                                true;
+
+                        case START,
+                                        REST,
+                                        REWARD ->
+                                false;
+                };
         }
 }

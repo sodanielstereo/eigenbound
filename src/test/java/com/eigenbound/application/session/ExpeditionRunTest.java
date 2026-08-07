@@ -4,6 +4,7 @@ import java.util.List;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertNotEquals;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 import org.junit.jupiter.api.BeforeEach;
@@ -17,173 +18,202 @@ import com.eigenbound.domain.expedition.generation.GeneratedExpedition;
 
 class ExpeditionRunTest {
 
-    private ExpeditionMap map;
-    private ExpeditionRun run;
+        private ExpeditionMap map;
+        private ExpeditionRun run;
 
-    @BeforeEach
-    void setUp() {
-        map = createMap();
+        @BeforeEach
+        void setUp() {
+                map = createMap();
+                run = new ExpeditionRun(
+                                new GeneratedExpedition(
+                                                map,
+                                                73L,
+                                                3));
+        }
 
-        run = new ExpeditionRun(
-                new GeneratedExpedition(
-                        map,
-                        73L,
-                        3));
-    }
+        @Test
+        void shouldStartAtExpeditionStartNode() {
+                assertEquals(
+                                map.findNode("start"),
+                                run.expeditionSession().currentNode());
+        }
 
-    @Test
-    void shouldStartAtExpeditionStartNode() {
-        assertEquals(
-                map.findNode("start"),
-                run.expeditionSession().currentNode());
-    }
+        @Test
+        void shouldExposeOriginalGenerationSettings() {
+                assertEquals(73L, run.seed());
+                assertEquals(3, run.difficulty());
+        }
 
-    @Test
-    void shouldExposeOriginalGenerationSettings() {
-        assertEquals(73L, run.seed());
-        assertEquals(3, run.difficulty());
-    }
+        @Test
+        void shouldStartWithoutPendingRoom() {
+                assertTrue(run.pendingRoom().isEmpty());
+                assertFalse(run.hasPendingRoom());
+        }
 
-    @Test
-    void shouldStartWithoutPendingRoom() {
-        assertTrue(run.pendingRoom().isEmpty());
-        assertFalse(run.hasPendingRoom());
-    }
+        @Test
+        void shouldSelectAvailableRoomWithoutMovingPlayer() {
+                run.selectRoom("challenge");
 
-    @Test
-    void shouldSelectAvailableRoomWithoutMovingPlayer() {
-        run.selectRoom("challenge");
+                assertEquals(
+                                map.findNode("challenge"),
+                                run.pendingRoom().orElseThrow());
+                assertEquals(
+                                map.findNode("start"),
+                                run.expeditionSession().currentNode());
+        }
 
-        assertEquals(
-                map.findNode("challenge"),
-                run.pendingRoom().orElseThrow());
+        @Test
+        void shouldDeriveDeterministicSeedForPendingRoom() {
+                run.selectRoom("challenge");
 
-        assertEquals(
-                map.findNode("start"),
-                run.expeditionSession().currentNode());
-    }
+                long expectedSeed = 73L
+                                ^ Integer.toUnsignedLong(
+                                                "challenge".hashCode());
 
-    @Test
-    void shouldRejectUnavailableRoomSelection() {
-        assertThrows(
-                IllegalArgumentException.class,
-                () -> run.selectRoom("boss"));
+                assertEquals(
+                                expectedSeed,
+                                run.pendingChallengeSeed());
+        }
 
-        assertFalse(run.hasPendingRoom());
-    }
+        @Test
+        void shouldDeriveDifferentSeedsForDifferentRooms() {
+                run.selectRoom("challenge");
+                long challengeSeed = run.pendingChallengeSeed();
 
-    @Test
-    void shouldRejectAnotherSelectionWhileRoomIsPending() {
-        run.selectRoom("challenge");
+                run.cancelPendingRoom();
+                run.selectRoom("rest");
 
-        assertThrows(
-                IllegalStateException.class,
-                () -> run.selectRoom("rest"));
+                assertNotEquals(
+                                challengeSeed,
+                                run.pendingChallengeSeed());
+        }
 
-        assertEquals(
-                map.findNode("challenge"),
-                run.pendingRoom().orElseThrow());
-    }
+        @Test
+        void shouldRejectChallengeSeedWithoutPendingRoom() {
+                assertThrows(
+                                IllegalStateException.class,
+                                run::pendingChallengeSeed);
+        }
 
-    @Test
-    void shouldCompletePendingRoomAndCommitMovement() {
-        run.selectRoom("challenge");
+        @Test
+        void shouldRejectUnavailableRoomSelection() {
+                assertThrows(
+                                IllegalArgumentException.class,
+                                () -> run.selectRoom("boss"));
 
-        run.completePendingRoom();
+                assertFalse(run.hasPendingRoom());
+        }
 
-        assertEquals(
-                map.findNode("challenge"),
-                run.expeditionSession().currentNode());
+        @Test
+        void shouldRejectAnotherSelectionWhileRoomIsPending() {
+                run.selectRoom("challenge");
 
-        assertFalse(run.hasPendingRoom());
-    }
+                assertThrows(
+                                IllegalStateException.class,
+                                () -> run.selectRoom("rest"));
 
-    @Test
-    void shouldCancelPendingRoomWithoutMovingPlayer() {
-        run.selectRoom("challenge");
+                assertEquals(
+                                map.findNode("challenge"),
+                                run.pendingRoom().orElseThrow());
+        }
 
-        run.cancelPendingRoom();
+        @Test
+        void shouldCompletePendingRoomAndCommitMovement() {
+                run.selectRoom("challenge");
 
-        assertEquals(
-                map.findNode("start"),
-                run.expeditionSession().currentNode());
+                run.completePendingRoom();
 
-        assertFalse(run.hasPendingRoom());
-    }
+                assertEquals(
+                                map.findNode("challenge"),
+                                run.expeditionSession().currentNode());
+                assertFalse(run.hasPendingRoom());
+        }
 
-    @Test
-    void shouldRejectCompletionWithoutPendingRoom() {
-        assertThrows(
-                IllegalStateException.class,
-                run::completePendingRoom);
-    }
+        @Test
+        void shouldCancelPendingRoomWithoutMovingPlayer() {
+                run.selectRoom("challenge");
 
-    @Test
-    void shouldRejectCancellationWithoutPendingRoom() {
-        assertThrows(
-                IllegalStateException.class,
-                run::cancelPendingRoom);
-    }
+                run.cancelPendingRoom();
 
-    @Test
-    void shouldRejectNullRoomIdentifier() {
-        assertThrows(
-                NullPointerException.class,
-                () -> run.selectRoom(null));
-    }
+                assertEquals(
+                                map.findNode("start"),
+                                run.expeditionSession().currentNode());
+                assertFalse(run.hasPendingRoom());
+        }
 
-    @Test
-    void shouldRejectNullGeneratedExpedition() {
-        assertThrows(
-                NullPointerException.class,
-                () -> new ExpeditionRun(null));
-    }
+        @Test
+        void shouldRejectCompletionWithoutPendingRoom() {
+                assertThrows(
+                                IllegalStateException.class,
+                                run::completePendingRoom);
+        }
 
-    private ExpeditionMap createMap() {
-        ExpeditionNode start = new ExpeditionNode(
-                "start",
-                0,
-                RoomType.START,
-                0);
+        @Test
+        void shouldRejectCancellationWithoutPendingRoom() {
+                assertThrows(
+                                IllegalStateException.class,
+                                run::cancelPendingRoom);
+        }
 
-        ExpeditionNode challenge = new ExpeditionNode(
-                "challenge",
-                1,
-                RoomType.VECTOR_CHALLENGE,
-                2);
+        @Test
+        void shouldRejectNullRoomIdentifier() {
+                assertThrows(
+                                NullPointerException.class,
+                                () -> run.selectRoom(null));
+        }
 
-        ExpeditionNode rest = new ExpeditionNode(
-                "rest",
-                1,
-                RoomType.REST,
-                0);
+        @Test
+        void shouldRejectNullGeneratedExpedition() {
+                assertThrows(
+                                NullPointerException.class,
+                                () -> new ExpeditionRun(null));
+        }
 
-        ExpeditionNode boss = new ExpeditionNode(
-                "boss",
-                2,
-                RoomType.BOSS,
-                3);
-
-        return new ExpeditionMap(
-                List.of(
-                        start,
-                        challenge,
-                        rest,
-                        boss),
-                List.of(
-                        new ExpeditionEdge(
+        private ExpeditionMap createMap() {
+                ExpeditionNode start = new ExpeditionNode(
                                 "start",
-                                "challenge"),
-                        new ExpeditionEdge(
-                                "start",
-                                "rest"),
-                        new ExpeditionEdge(
+                                0,
+                                RoomType.START,
+                                0);
+
+                ExpeditionNode challenge = new ExpeditionNode(
                                 "challenge",
-                                "boss"),
-                        new ExpeditionEdge(
+                                1,
+                                RoomType.VECTOR_CHALLENGE,
+                                2);
+
+                ExpeditionNode rest = new ExpeditionNode(
                                 "rest",
-                                "boss")),
-                "start",
-                "boss");
-    }
+                                1,
+                                RoomType.REST,
+                                0);
+
+                ExpeditionNode boss = new ExpeditionNode(
+                                "boss",
+                                2,
+                                RoomType.BOSS,
+                                3);
+
+                return new ExpeditionMap(
+                                List.of(
+                                                start,
+                                                challenge,
+                                                rest,
+                                                boss),
+                                List.of(
+                                                new ExpeditionEdge(
+                                                                "start",
+                                                                "challenge"),
+                                                new ExpeditionEdge(
+                                                                "start",
+                                                                "rest"),
+                                                new ExpeditionEdge(
+                                                                "challenge",
+                                                                "boss"),
+                                                new ExpeditionEdge(
+                                                                "rest",
+                                                                "boss")),
+                                "start",
+                                "boss");
+        }
 }
