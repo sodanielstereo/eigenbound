@@ -143,11 +143,6 @@ public final class ExpeditionMapController {
          *
          * @param nodeId identifier of the selected room
          */
-        /**
-         * Handles a node selected through the expedition canvas.
-         *
-         * @param nodeId identifier of the selected room
-         */
         private void handleNodeSelection(
                         String nodeId) {
 
@@ -168,24 +163,7 @@ public final class ExpeditionMapController {
                                 .findNode(nodeId);
 
                 expeditionRun.selectRoom(nodeId);
-
-                if (requiresChallenge(selectedNode.type())) {
-                        openPendingChallenge();
-                        return;
-                }
-
-                expeditionRun.completePendingRoom();
-
-                expeditionCanvas.redraw();
-                updateProgressLabels();
-
-                ExpeditionNode currentNode = expeditionSession.currentNode();
-
-                setExpeditionStatus(
-                                "Entraste a "
-                                                + roomName(currentNode.type())
-                                                + ". Elige una ruta disponible para continuar.",
-                                "status-neutral");
+                openPendingRoomEvent(selectedNode.type());
         }
 
         /**
@@ -221,16 +199,33 @@ public final class ExpeditionMapController {
         }
 
         /**
-         * Opens the laboratory for the currently pending challenge room.
+         * Opens the laboratory associated with the currently pending room.
+         *
+         * @param roomType type of the selected pending room
          */
-        private void openPendingChallenge() {
+        private void openPendingRoomEvent(
+                        RoomType roomType) {
+                String fxmlName = switch (roomType) {
+                        case VECTOR_CHALLENGE,
+                                        ELITE_CHALLENGE,
+                                        BOSS ->
+                                "vector-laboratory";
+
+                        case REST,
+                                        REWARD ->
+                                "mini-puzzle-laboratory";
+
+                        case START -> throw new IllegalArgumentException(
+                                        "Start room cannot produce a playable event");
+                };
+
                 try {
-                        App.setRoot("vector-laboratory");
+                        App.setRoot(fxmlName);
                 } catch (IOException exception) {
                         expeditionRun.cancelPendingRoom();
 
                         setExpeditionStatus(
-                                        "No fue posible abrir el desafío. Inténtalo nuevamente.",
+                                        "No fue posible abrir el evento. Inténtalo nuevamente.",
                                         "status-error");
                 }
         }
@@ -393,25 +388,4 @@ public final class ExpeditionMapController {
                                 : currentSeed + 1;
         }
 
-        /**
-         * Determines whether a room must be resolved in the laboratory.
-         *
-         * @param type selected room type
-         * @return true when the room contains a playable challenge
-         */
-        private boolean requiresChallenge(
-                        RoomType type) {
-
-                return switch (type) {
-                        case VECTOR_CHALLENGE,
-                                        ELITE_CHALLENGE,
-                                        BOSS ->
-                                true;
-
-                        case START,
-                                        REST,
-                                        REWARD ->
-                                false;
-                };
-        }
 }

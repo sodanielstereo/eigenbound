@@ -709,6 +709,24 @@
     -fx-text-fill: #ffffff;
 }
 
+.puzzle-option-button:disabled {
+    -fx-opacity: 0.78;
+}
+
+.puzzle-option-correct,
+.puzzle-option-correct:disabled {
+    -fx-background-color: #17362f;
+    -fx-border-color: #55d6a8;
+    -fx-text-fill: #9af0d1;
+}
+
+.puzzle-option-incorrect,
+.puzzle-option-incorrect:disabled {
+    -fx-background-color: #3d2028;
+    -fx-border-color: #ff667d;
+    -fx-text-fill: #ffb1bf;
+}
+
 .puzzle-timer-card {
     -fx-background-color: #18233a;
     -fx-background-radius: 8px;
@@ -736,6 +754,14 @@
 .puzzle-time-progress > .bar {
     -fx-background-radius: 5px;
     -fx-background-insets: 0;
+}
+
+.puzzle-time-warning {
+    -fx-text-fill: #ff667d;
+}
+
+.puzzle-time-danger {
+    -fx-accent: #ff667d;
 }
 
 .puzzle-explanation {
