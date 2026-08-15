@@ -4,6 +4,7 @@ import java.util.Objects;
 import java.util.Optional;
 
 import com.eigenbound.domain.expedition.ExpeditionNode;
+import com.eigenbound.domain.expedition.ExpeditionResources;
 import com.eigenbound.domain.expedition.generation.GeneratedExpedition;
 
 /**
@@ -20,6 +21,7 @@ public final class ExpeditionRun {
 
     private final GeneratedExpedition generatedExpedition;
     private final ExpeditionSession expeditionSession;
+    private ExpeditionResources resources;
     private ExpeditionNode pendingRoom;
 
     /**
@@ -34,6 +36,7 @@ public final class ExpeditionRun {
                 "Generated expedition cannot be null");
         this.expeditionSession = new ExpeditionSession(
                 generatedExpedition.map());
+        this.resources = ExpeditionResources.initial();
     }
 
     /**
@@ -61,6 +64,68 @@ public final class ExpeditionRun {
      */
     public int difficulty() {
         return generatedExpedition.difficulty();
+    }
+
+    /**
+     * Returns the immutable resource snapshot currently owned by this run.
+     *
+     * @return current stability and insight
+     */
+    public ExpeditionResources resources() {
+        return resources;
+    }
+
+    /**
+     * Indicates whether the expedition has exhausted all stability.
+     *
+     * @return {@code true} when the run can no longer continue
+     */
+    public boolean isFailed() {
+        return resources.isDepleted();
+    }
+
+    /**
+     * Applies stability damage to an active expedition.
+     *
+     * @param amount stability removed from the run
+     */
+    public void loseStability(
+            int amount) {
+        requireNotFailed();
+        resources = resources.loseStability(amount);
+    }
+
+    /**
+     * Restores stability without exceeding the run's maximum.
+     *
+     * @param amount stability restored to the run
+     */
+    public void restoreStability(
+            int amount) {
+        requireNotFailed();
+        resources = resources.restoreStability(amount);
+    }
+
+    /**
+     * Adds insight earned during the expedition.
+     *
+     * @param amount insight added to the run
+     */
+    public void gainInsight(
+            long amount) {
+        requireNotFailed();
+        resources = resources.gainInsight(amount);
+    }
+
+    /**
+     * Spends insight owned by the expedition.
+     *
+     * @param amount insight removed from the run
+     */
+    public void spendInsight(
+            long amount) {
+        requireNotFailed();
+        resources = resources.spendInsight(amount);
     }
 
     /**
@@ -117,6 +182,8 @@ public final class ExpeditionRun {
                 nodeId,
                 "Node ID cannot be null");
 
+        requireNotFailed();
+
         if (hasPendingRoom()) {
             throw new IllegalStateException(
                     "Another expedition room is already pending");
@@ -143,6 +210,8 @@ public final class ExpeditionRun {
      * @throws IllegalStateException when no room is waiting to be completed
      */
     public void completePendingRoom() {
+        requireNotFailed();
+
         ExpeditionNode room = requirePendingRoom();
 
         expeditionSession.moveTo(room.id());
@@ -169,5 +238,15 @@ public final class ExpeditionRun {
         }
 
         return pendingRoom;
+    }
+
+    /**
+     * Rejects operations that could revive or advance a collapsed run.
+     */
+    private void requireNotFailed() {
+        if (isFailed()) {
+            throw new IllegalStateException(
+                    "Failed expedition cannot continue");
+        }
     }
 }
