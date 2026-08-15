@@ -13,6 +13,7 @@ import org.junit.jupiter.api.Test;
 import com.eigenbound.domain.expedition.ExpeditionEdge;
 import com.eigenbound.domain.expedition.ExpeditionMap;
 import com.eigenbound.domain.expedition.ExpeditionNode;
+import com.eigenbound.domain.expedition.ExpeditionResources;
 import com.eigenbound.domain.expedition.RoomType;
 import com.eigenbound.domain.expedition.generation.GeneratedExpedition;
 
@@ -42,6 +43,81 @@ class ExpeditionRunTest {
         void shouldExposeOriginalGenerationSettings() {
                 assertEquals(73L, run.seed());
                 assertEquals(3, run.difficulty());
+        }
+
+        @Test
+        void shouldStartWithInitialResources() {
+                assertEquals(
+                                ExpeditionResources.initial(),
+                                run.resources());
+                assertFalse(run.isFailed());
+        }
+
+        @Test
+        void shouldLoseStabilityUsingImmutableSnapshots() {
+                ExpeditionResources initialResources = run.resources();
+
+                run.loseStability(25);
+
+                assertEquals(75, run.resources().stability());
+                assertEquals(100, initialResources.stability());
+        }
+
+        @Test
+        void shouldRestoreStability() {
+                run.loseStability(60);
+
+                run.restoreStability(20);
+
+                assertEquals(60, run.resources().stability());
+        }
+
+        @Test
+        void shouldGainAndSpendInsight() {
+                run.gainInsight(30L);
+                run.spendInsight(12L);
+
+                assertEquals(18L, run.resources().insight());
+        }
+
+        @Test
+        void shouldFailWhenStabilityIsDepleted() {
+                run.loseStability(100);
+
+                assertTrue(run.isFailed());
+                assertEquals(0, run.resources().stability());
+        }
+
+        @Test
+        void shouldRejectRoomSelectionAfterFailure() {
+                run.loseStability(100);
+
+                assertThrows(
+                                IllegalStateException.class,
+                                () -> run.selectRoom("challenge"));
+        }
+
+        @Test
+        void shouldRejectStabilityRestorationAfterFailure() {
+                run.loseStability(100);
+
+                assertThrows(
+                                IllegalStateException.class,
+                                () -> run.restoreStability(10));
+
+                assertEquals(0, run.resources().stability());
+        }
+
+        @Test
+        void shouldRejectPendingRoomCompletionAfterFailure() {
+                run.selectRoom("challenge");
+                run.loseStability(100);
+
+                assertThrows(
+                                IllegalStateException.class,
+                                run::completePendingRoom);
+
+                assertTrue(run.hasPendingRoom());
         }
 
         @Test
