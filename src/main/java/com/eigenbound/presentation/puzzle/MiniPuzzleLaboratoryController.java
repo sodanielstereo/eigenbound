@@ -7,8 +7,10 @@ import java.util.Locale;
 import java.util.Map;
 
 import com.eigenbound.App;
+import com.eigenbound.application.effect.RoomEffect;
 import com.eigenbound.application.event.ExpeditionRoomEvent;
 import com.eigenbound.application.event.ExpeditionRoomEventFactory;
+import com.eigenbound.application.event.ExpeditionRoomResolver;
 import com.eigenbound.application.event.MiniPuzzleRoomEvent;
 import com.eigenbound.application.session.ExpeditionRun;
 import com.eigenbound.application.session.PuzzleSession;
@@ -42,6 +44,8 @@ public final class MiniPuzzleLaboratoryController {
 
         private final ExpeditionRoomEventFactory eventFactory = new ExpeditionRoomEventFactory();
 
+        private final ExpeditionRoomResolver roomResolver = new ExpeditionRoomResolver();
+
         private final Map<String, Button> optionButtons = new LinkedHashMap<>();
 
         private final AnimationTimer countdownTimer = new AnimationTimer() {
@@ -55,6 +59,7 @@ public final class MiniPuzzleLaboratoryController {
         private ExpeditionRun expeditionRun;
         private MiniPuzzleRoomEvent roomEvent;
         private PuzzleSession puzzleSession;
+        private RoomEffect appliedRoomEffect;
         private long startedAtNanos;
 
         @FXML
@@ -134,29 +139,36 @@ public final class MiniPuzzleLaboratoryController {
                         throws IOException {
                 countdownTimer.stop();
 
-                if (!puzzleSession.isFinished()) {
-                        puzzleSession.cancel(elapsedTime());
+                if (puzzleSession.isFinished()) {
+                        throw new IllegalStateException(
+                                        "Finished puzzle cannot be cancelled");
                 }
 
-                expeditionRun.cancelPendingRoom();
+                PuzzleResult cancelledResult = puzzleSession.cancel(
+                                elapsedTime());
+
+                roomResolver.resolveMiniPuzzle(
+                                expeditionRun,
+                                roomEvent,
+                                cancelledResult);
+
                 App.setRoot("expedition-map");
         }
 
         /**
-         * Commits the resolved room and returns to the expedition map.
+         * Returns to the expedition map after the room has been resolved.
          *
          * @throws IOException when the expedition-map FXML cannot be loaded
          */
         @FXML
         private void onContinue()
                         throws IOException {
-                if (!puzzleSession.isFinished()) {
+                if (appliedRoomEffect == null) {
                         throw new IllegalStateException(
-                                        "Puzzle must be resolved before continuing");
+                                        "Puzzle room must be resolved before continuing");
                 }
 
                 countdownTimer.stop();
-                expeditionRun.completePendingRoom();
                 App.setRoot("expedition-map");
         }
 
@@ -286,6 +298,12 @@ public final class MiniPuzzleLaboratoryController {
         private void finishAttempt(
                         PuzzleResult result) {
                 countdownTimer.stop();
+
+                appliedRoomEffect = roomResolver.resolveMiniPuzzle(
+                                expeditionRun,
+                                roomEvent,
+                                result);
+
                 disableOptions();
                 highlightAnswers(result);
 

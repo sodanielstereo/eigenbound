@@ -24,17 +24,17 @@
             styleClass="root-pane">
   <top>
     <VBox spacing="5.0"
-                  styleClass="header">
+                      styleClass="header">
       <padding>
         <Insets top="18.0"
-                                right="24.0"
-                                bottom="18.0"
-                                left="24.0"/>
+                                        right="24.0"
+                                        bottom="18.0"
+                                        left="24.0"/>
       </padding>
       <Label text="EIGENBOUND"
-                         styleClass="game-title"/>
+                               styleClass="game-title"/>
       <Label text="Cámara de Cifrado · Descifra la anomalía antes de que colapse"
-                         styleClass="game-subtitle"/>
+                               styleClass="game-subtitle"/>
     </VBox>
   </top>
 
@@ -42,102 +42,123 @@
     <StackPane styleClass="puzzle-arena">
       <padding>
         <Insets top="36.0"
-                                right="44.0"
-                                bottom="36.0"
-                                left="44.0"/>
+                                        right="44.0"
+                                        bottom="36.0"
+                                        left="44.0"/>
       </padding>
       <VBox alignment="CENTER"
-                        maxWidth="760.0"
-                        spacing="22.0"
-                        styleClass="puzzle-card">
+                              maxWidth="760.0"
+                              spacing="22.0"
+                              styleClass="puzzle-card">
         <Label fx:id="topicLabel"
-                               text="CRIPTOGRAFÍA"
-                               styleClass="puzzle-topic-label"/>
+                                       text="CRIPTOGRAFÍA"
+                                       styleClass="puzzle-topic-label"/>
         <Label text="INTERCEPTED SIGNAL"
-                               styleClass="puzzle-signal-label"/>
+                                       styleClass="puzzle-signal-label"/>
         <Label fx:id="promptLabel"
-                               text="Decrypt the intercepted message."
-                               wrapText="true"
-                               maxWidth="650.0"
-                               styleClass="puzzle-prompt-label"/>
+                                       text="Decrypt the intercepted message."
+                                       wrapText="true"
+                                       maxWidth="650.0"
+                                       styleClass="puzzle-prompt-label"/>
         <VBox fx:id="optionButtonContainer"
-                              maxWidth="620.0"
-                              spacing="12.0"/>
+                                      maxWidth="620.0"
+                                      spacing="12.0"/>
       </VBox>
     </StackPane>
   </center>
 
   <right>
     <ScrollPane fitToWidth="true"
-                        hbarPolicy="NEVER"
-                        prefWidth="340.0"
-                        minWidth="320.0"
-                        styleClass="control-scroll">
+                            hbarPolicy="NEVER"
+                            prefWidth="340.0"
+                            minWidth="320.0"
+                            styleClass="control-scroll">
       <content>
         <VBox spacing="14.0"
-                              styleClass="control-panel">
+                                      styleClass="control-panel">
           <padding>
             <Insets top="20.0"
-                                            right="20.0"
-                                            bottom="20.0"
-                                            left="20.0"/>
+                                                        right="20.0"
+                                                        bottom="20.0"
+                                                        left="20.0"/>
           </padding>
           <Button fx:id="cancelButton"
-                                      text="← CANCELAR Y VOLVER AL MAPA"
-                                      onAction="#onCancelAndReturn"
-                                      maxWidth="Infinity"
-                                      styleClass="secondary-button"/>
+                                                text="← CANCELAR Y VOLVER AL MAPA"
+                                                onAction="#onCancelAndReturn"
+                                                maxWidth="Infinity"
+                                                styleClass="secondary-button"/>
           <Label text="EVENTO DE EXPEDICIÓN"
-                                     styleClass="section-title"/>
+                                               styleClass="section-title"/>
           <VBox spacing="7.0"
-                                    styleClass="information-card">
+                                              styleClass="information-card">
             <Label fx:id="roomTypeLabel"
-                                           text="Tipo:"
-                                           styleClass="information-label"/>
+                                                       text="Tipo:"
+                                                       styleClass="information-label"/>
             <Label fx:id="roomIdLabel"
-                                           text="Sala:"
-                                           styleClass="information-label"/>
+                                                       text="Sala:"
+                                                       styleClass="information-label"/>
             <Label fx:id="seedLabel"
-                                           text="Semilla:"
-                                           styleClass="secondary-label"/>
+                                                       text="Semilla:"
+                                                       styleClass="secondary-label"/>
             <Label fx:id="difficultyLabel"
-                                           text="Dificultad:"
-                                           styleClass="secondary-label"/>
+                                                       text="Dificultad:"
+                                                       styleClass="secondary-label"/>
             <Label fx:id="timeLimitLabel"
-                                           text="Límite:"
-                                           styleClass="secondary-label"/>
+                                                       text="Límite:"
+                                                       styleClass="secondary-label"/>
+          </VBox>
+          <Label text="RECURSOS"
+                                               styleClass="section-title"/>
+          <VBox spacing="9.0"
+                                              styleClass="resource-card">
+            <Label fx:id="stabilityLabel"
+                                                       text="Estabilidad: 100 / 100"
+                                                       styleClass="resource-stability-label"/>
+            <ProgressBar fx:id="stabilityProgressBar"
+                                                             progress="1.0"
+                                                             maxWidth="Infinity"
+                                                             styleClass="stability-progress"/>
+            <Label fx:id="insightLabel"
+                                                       text="Insight: 0"
+                                                       styleClass="resource-insight-label"/>
           </VBox>
           <Label text="ESTABILIDAD DE LA SEÑAL"
-                                     styleClass="section-title"/>
+                                               styleClass="section-title"/>
           <VBox spacing="9.0"
-                                    styleClass="puzzle-timer-card">
+                                              styleClass="puzzle-timer-card">
             <Label fx:id="timeRemainingLabel"
-                                           text="20 s"
-                                           styleClass="puzzle-time-label"/>
+                                                       text="20 s"
+                                                       styleClass="puzzle-time-label"/>
             <ProgressBar fx:id="timeProgressBar"
-                                                 progress="1.0"
-                                                 maxWidth="Infinity"
-                                                 styleClass="puzzle-time-progress"/>
+                                                             progress="1.0"
+                                                             maxWidth="Infinity"
+                                                             styleClass="puzzle-time-progress"/>
           </VBox>
           <Label text="RESULTADO"
-                                     styleClass="section-title"/>
+                                               styleClass="section-title"/>
           <Label fx:id="statusLabel"
-                                     text="Observa el mensaje y elige una respuesta."
-                                     wrapText="true"
-                                     styleClass="status-neutral"/>
+                                               text="Observa el mensaje y elige una respuesta."
+                                               wrapText="true"
+                                               styleClass="status-neutral"/>
+          <Label text="EFECTO DE LA HABITACIÓN"
+                                               styleClass="section-title"/>
+          <Label fx:id="effectLabel"
+                                               text="El efecto de la habitación aparecerá al terminar el intento."
+                                               wrapText="true"
+                                               styleClass="status-neutral"/>
           <Label text="EXPLICACIÓN"
-                                     styleClass="section-title"/>
+                                               styleClass="section-title"/>
           <Label fx:id="explanationLabel"
-                                     text="La explicación aparecerá cuando termine el intento."
-                                     wrapText="true"
-                                     styleClass="puzzle-explanation"/>
+                                               text="La explicación aparecerá cuando termine el intento."
+                                               wrapText="true"
+                                               styleClass="puzzle-explanation"/>
           <Button fx:id="continueButton"
-                                      text="CONTINUAR EXPEDICIÓN"
-                                      onAction="#onContinue"
-                                      maxWidth="Infinity"
-                                      visible="false"
-                                      managed="false"
-                                      styleClass="primary-button"/>
+                                                text="CONTINUAR EXPEDICIÓN"
+                                                onAction="#onContinue"
+                                                maxWidth="Infinity"
+                                                visible="false"
+                                                managed="false"
+                                                styleClass="primary-button"/>
         </VBox>
       </content>
     </ScrollPane>
