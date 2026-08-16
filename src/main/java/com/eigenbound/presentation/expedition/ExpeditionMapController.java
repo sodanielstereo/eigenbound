@@ -7,6 +7,7 @@ import com.eigenbound.application.session.ExpeditionRun;
 import com.eigenbound.application.session.ExpeditionSession;
 import com.eigenbound.domain.expedition.ExpeditionMap;
 import com.eigenbound.domain.expedition.ExpeditionNode;
+import com.eigenbound.domain.expedition.ExpeditionResources;
 import com.eigenbound.domain.expedition.RoomType;
 import com.eigenbound.domain.expedition.analysis.ReachabilityMatrix;
 import com.eigenbound.domain.expedition.analysis.WarshallReachabilityAnalyzer;
@@ -15,6 +16,7 @@ import com.eigenbound.domain.expedition.generation.GeneratedExpedition;
 
 import javafx.fxml.FXML;
 import javafx.scene.control.Label;
+import javafx.scene.control.ProgressBar;
 
 /**
  * Controls the procedural and interactive expedition-map screen.
@@ -62,6 +64,15 @@ public final class ExpeditionMapController {
 
         @FXML
         private Label availableRoomsLabel;
+
+        @FXML
+        private Label stabilityLabel;
+
+        @FXML
+        private ProgressBar stabilityProgressBar;
+
+        @FXML
+        private Label insightLabel;
 
         @FXML
         private Label expeditionStatusLabel;
@@ -147,6 +158,13 @@ public final class ExpeditionMapController {
                         String nodeId) {
 
                 if (expeditionSession == null) {
+                        return;
+                }
+
+                if (expeditionRun.isFailed()) {
+                        setExpeditionStatus(
+                                        "La expedición colapsó. Genera una nueva para volver a intentarlo.",
+                                        "status-error");
                         return;
                 }
 
@@ -256,7 +274,11 @@ public final class ExpeditionMapController {
 
                 updateProgressLabels();
 
-                if (expeditionSession.isCompleted()) {
+                if (expeditionRun.isFailed()) {
+                        setExpeditionStatus(
+                                        "La expedición colapsó al quedarse sin Estabilidad.",
+                                        "status-error");
+                } else if (expeditionSession.isCompleted()) {
                         setExpeditionStatus(
                                         "Expedición completada. Puedes generar una nueva.",
                                         "status-solved");
@@ -321,9 +343,34 @@ public final class ExpeditionMapController {
 
                 availableRoomsLabel.setText(
                                 "Opciones disponibles: "
-                                                + expeditionSession
-                                                                .availableNodes()
-                                                                .size());
+                                                + (expeditionRun.isFailed()
+                                                                ? 0
+                                                                : expeditionSession
+                                                                                .availableNodes()
+                                                                                .size()));
+
+                updateResourceLabels();
+        }
+
+        /**
+         * Renders the latest immutable expedition-resource snapshot.
+         */
+        private void updateResourceLabels() {
+                ExpeditionResources resources = expeditionRun.resources();
+
+                stabilityLabel.setText(
+                                "Estabilidad: "
+                                                + resources.stability()
+                                                + " / "
+                                                + resources.maxStability());
+
+                double stabilityProgress = resources.stability()
+                                / (double) resources.maxStability();
+
+                stabilityProgressBar.setProgress(stabilityProgress);
+
+                insightLabel.setText(
+                                "Insight: " + resources.insight());
         }
 
         /**
