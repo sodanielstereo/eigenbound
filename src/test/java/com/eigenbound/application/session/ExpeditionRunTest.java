@@ -143,6 +143,46 @@ class ExpeditionRunTest {
         }
 
         @Test
+        void shouldCreateSummaryAfterVictory() {
+                completeExpedition();
+
+                ExpeditionSummary summary = run.summary();
+
+                assertEquals(
+                                ExpeditionRunState.VICTORY,
+                                summary.outcome());
+                assertEquals(73L, summary.seed());
+                assertEquals(3, summary.difficulty());
+                assertEquals(
+                                ExpeditionResources.initial(),
+                                summary.finalResources());
+                assertEquals(3, summary.visitedRoomCount());
+        }
+
+        @Test
+        void shouldCreateSummaryAfterDefeat() {
+                run.selectRoom("challenge");
+                run.loseStability(100);
+
+                ExpeditionSummary summary = run.summary();
+
+                assertEquals(
+                                ExpeditionRunState.DEFEAT,
+                                summary.outcome());
+                assertEquals(
+                                0,
+                                summary.finalResources().stability());
+                assertEquals(1, summary.visitedRoomCount());
+        }
+
+        @Test
+        void shouldRejectSummaryWhileRunIsActive() {
+                assertThrows(
+                                IllegalStateException.class,
+                                run::summary);
+        }
+
+        @Test
         void shouldRejectRoomSelectionAfterFailure() {
                 run.loseStability(100);
 

@@ -102,6 +102,28 @@ public final class ExpeditionRun {
     }
 
     /**
+     * Creates an immutable snapshot of the completed expedition.
+     *
+     * @return final expedition summary
+     * @throws IllegalStateException when the expedition is still active
+     */
+    public ExpeditionSummary summary() {
+        ExpeditionRunState outcome = state();
+
+        if (!outcome.isTerminal()) {
+            throw new IllegalStateException(
+                    "Active expedition does not have a final summary");
+        }
+
+        return new ExpeditionSummary(
+                outcome,
+                seed(),
+                difficulty(),
+                resources,
+                expeditionSession.visitedNodes().size());
+    }
+
+    /**
      * Indicates whether the expedition has exhausted all stability.
      *
      * @return {@code true} when the run can no longer continue
