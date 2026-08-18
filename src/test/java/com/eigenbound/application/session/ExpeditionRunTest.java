@@ -40,6 +40,14 @@ class ExpeditionRunTest {
         }
 
         @Test
+        void shouldStartWithActiveRunState() {
+                assertEquals(
+                                ExpeditionRunState.ACTIVE,
+                                run.state());
+                assertFalse(run.isFinished());
+        }
+
+        @Test
         void shouldExposeOriginalGenerationSettings() {
                 assertEquals(73L, run.seed());
                 assertEquals(3, run.difficulty());
@@ -85,7 +93,53 @@ class ExpeditionRunTest {
                 run.loseStability(100);
 
                 assertTrue(run.isFailed());
+                assertTrue(run.isFinished());
+                assertEquals(
+                                ExpeditionRunState.DEFEAT,
+                                run.state());
                 assertEquals(0, run.resources().stability());
+        }
+
+        @Test
+        void shouldReachVictoryAfterCompletingBossRoom() {
+                completeExpedition();
+
+                assertEquals(
+                                ExpeditionRunState.VICTORY,
+                                run.state());
+                assertTrue(run.isFinished());
+                assertFalse(run.isFailed());
+        }
+
+        @Test
+        void shouldRejectRoomSelectionAfterVictory() {
+                completeExpedition();
+
+                assertThrows(
+                                IllegalStateException.class,
+                                () -> run.selectRoom("boss"));
+        }
+
+        @Test
+        void shouldRejectResourceChangesAfterVictory() {
+                completeExpedition();
+
+                assertThrows(
+                                IllegalStateException.class,
+                                () -> run.loseStability(1));
+                assertThrows(
+                                IllegalStateException.class,
+                                () -> run.restoreStability(1));
+                assertThrows(
+                                IllegalStateException.class,
+                                () -> run.gainInsight(1L));
+                assertThrows(
+                                IllegalStateException.class,
+                                () -> run.spendInsight(0L));
+
+                assertEquals(
+                                ExpeditionResources.initial(),
+                                run.resources());
         }
 
         @Test
@@ -243,6 +297,13 @@ class ExpeditionRunTest {
                 assertThrows(
                                 NullPointerException.class,
                                 () -> new ExpeditionRun(null));
+        }
+
+        private void completeExpedition() {
+                run.selectRoom("challenge");
+                run.completePendingRoom();
+                run.selectRoom("boss");
+                run.completePendingRoom();
         }
 
         private ExpeditionMap createMap() {

@@ -76,22 +76,49 @@ public final class ExpeditionRun {
     }
 
     /**
+     * Derives the current lifecycle state from navigation and resources.
+     *
+     * @return active, victory or defeat state
+     */
+    public ExpeditionRunState state() {
+        if (resources.isDepleted()) {
+            return ExpeditionRunState.DEFEAT;
+        }
+
+        if (expeditionSession.isCompleted()) {
+            return ExpeditionRunState.VICTORY;
+        }
+
+        return ExpeditionRunState.ACTIVE;
+    }
+
+    /**
+     * Indicates whether the expedition reached victory or defeat.
+     *
+     * @return {@code true} when the run can no longer change
+     */
+    public boolean isFinished() {
+        return state().isTerminal();
+    }
+
+    /**
      * Indicates whether the expedition has exhausted all stability.
      *
      * @return {@code true} when the run can no longer continue
      */
     public boolean isFailed() {
-        return resources.isDepleted();
+        return state() == ExpeditionRunState.DEFEAT;
     }
 
     /**
      * Applies stability damage to an active expedition.
      *
      * @param amount stability removed from the run
+     * @throws IllegalStateException when the run already finished
      */
     public void loseStability(
             int amount) {
-        requireNotFailed();
+        requireActive();
         resources = resources.loseStability(amount);
     }
 
@@ -99,10 +126,11 @@ public final class ExpeditionRun {
      * Restores stability without exceeding the run's maximum.
      *
      * @param amount stability restored to the run
+     * @throws IllegalStateException when the run already finished
      */
     public void restoreStability(
             int amount) {
-        requireNotFailed();
+        requireActive();
         resources = resources.restoreStability(amount);
     }
 
@@ -110,10 +138,11 @@ public final class ExpeditionRun {
      * Adds insight earned during the expedition.
      *
      * @param amount insight added to the run
+     * @throws IllegalStateException when the run already finished
      */
     public void gainInsight(
             long amount) {
-        requireNotFailed();
+        requireActive();
         resources = resources.gainInsight(amount);
     }
 
@@ -121,10 +150,11 @@ public final class ExpeditionRun {
      * Spends insight owned by the expedition.
      *
      * @param amount insight removed from the run
+     * @throws IllegalStateException when the run already finished
      */
     public void spendInsight(
             long amount) {
-        requireNotFailed();
+        requireActive();
         resources = resources.spendInsight(amount);
     }
 
@@ -173,7 +203,7 @@ public final class ExpeditionRun {
      * @param nodeId identifier of the selected room
      * @throws NullPointerException     when the node identifier is null
      * @throws IllegalStateException    when another room is already pending or
-     *                                  the expedition is complete
+     *                                  the expedition already finished
      * @throws IllegalArgumentException when the room is not available from the
      *                                  current position
      */
@@ -182,16 +212,11 @@ public final class ExpeditionRun {
                 nodeId,
                 "Node ID cannot be null");
 
-        requireNotFailed();
+        requireActive();
 
         if (hasPendingRoom()) {
             throw new IllegalStateException(
                     "Another expedition room is already pending");
-        }
-
-        if (expeditionSession.isCompleted()) {
-            throw new IllegalStateException(
-                    "Completed expedition cannot select another room");
         }
 
         if (!expeditionSession.canMoveTo(nodeId)) {
@@ -207,10 +232,11 @@ public final class ExpeditionRun {
     /**
      * Commits the movement to the pending room.
      *
-     * @throws IllegalStateException when no room is waiting to be completed
+     * @throws IllegalStateException when no room is waiting to be completed or
+     *                               the expedition already finished
      */
     public void completePendingRoom() {
-        requireNotFailed();
+        requireActive();
 
         ExpeditionNode room = requirePendingRoom();
 
@@ -241,11 +267,16 @@ public final class ExpeditionRun {
     }
 
     /**
-     * Rejects operations that could revive or advance a collapsed run.
+     * Rejects operations that could mutate a run after its terminal outcome.
      */
-    private void requireNotFailed() {
-        if (isFailed()) {
-            throw new IllegalStateException(
+    private void requireActive() {
+        switch (state()) {
+            case ACTIVE -> {
+                return;
+            }
+            case VICTORY -> throw new IllegalStateException(
+                    "Victorious expedition cannot continue");
+            case DEFEAT -> throw new IllegalStateException(
                     "Failed expedition cannot continue");
         }
     }
