@@ -17,6 +17,7 @@ import com.eigenbound.domain.expedition.generation.GeneratedExpedition;
 import javafx.fxml.FXML;
 import javafx.scene.control.Label;
 import javafx.scene.control.ProgressBar;
+import javafx.scene.layout.VBox;
 
 /**
  * Controls the procedural and interactive expedition-map screen.
@@ -76,6 +77,30 @@ public final class ExpeditionMapController {
 
         @FXML
         private Label expeditionStatusLabel;
+
+        @FXML
+        private VBox outcomePanel;
+
+        @FXML
+        private Label outcomeTitleLabel;
+
+        @FXML
+        private Label outcomeMessageLabel;
+
+        @FXML
+        private Label outcomeSeedLabel;
+
+        @FXML
+        private Label outcomeDifficultyLabel;
+
+        @FXML
+        private Label outcomeStabilityLabel;
+
+        @FXML
+        private Label outcomeInsightLabel;
+
+        @FXML
+        private Label outcomeVisitedRoomsLabel;
 
         @FXML
         private Label roomCountLabel;
@@ -161,10 +186,15 @@ public final class ExpeditionMapController {
                         return;
                 }
 
-                if (expeditionRun.isFailed()) {
+                if (expeditionRun.isFinished()) {
                         setExpeditionStatus(
-                                        "La expedición colapsó. Genera una nueva para volver a intentarlo.",
-                                        "status-error");
+                                        expeditionRun.isFailed()
+                                                        ? "La expedición colapsó. Genera una nueva para volver a intentarlo."
+                                                        : "La expedición ya fue completada. Genera una nueva para continuar.",
+                                        expeditionRun.isFailed()
+                                                        ? "status-error"
+                                                        : "status-solved");
+                        updateOutcomePanel();
                         return;
                 }
 
@@ -210,6 +240,8 @@ public final class ExpeditionMapController {
                                 reachability);
 
                 updateProgressLabels();
+
+                updateOutcomePanel();
 
                 setExpeditionStatus(
                                 "Selecciona una habitación resaltada para avanzar.",
@@ -274,19 +306,21 @@ public final class ExpeditionMapController {
 
                 updateProgressLabels();
 
-                if (expeditionRun.isFailed()) {
-                        setExpeditionStatus(
-                                        "La expedición colapsó al quedarse sin Estabilidad.",
-                                        "status-error");
-                } else if (expeditionSession.isCompleted()) {
-                        setExpeditionStatus(
-                                        "Expedición completada. Puedes generar una nueva.",
-                                        "status-solved");
-                } else {
-                        setExpeditionStatus(
+                switch (expeditionRun.state()) {
+                        case ACTIVE -> setExpeditionStatus(
                                         "Expedición restaurada. Elige una ruta disponible para continuar.",
                                         "status-neutral");
+
+                        case VICTORY -> setExpeditionStatus(
+                                        "Expedición completada. El núcleo fue estabilizado.",
+                                        "status-solved");
+
+                        case DEFEAT -> setExpeditionStatus(
+                                        "La expedición colapsó al quedarse sin Estabilidad.",
+                                        "status-error");
                 }
+
+                updateOutcomePanel();
         }
 
         /**
@@ -343,7 +377,7 @@ public final class ExpeditionMapController {
 
                 availableRoomsLabel.setText(
                                 "Opciones disponibles: "
-                                                + (expeditionRun.isFailed()
+                                                + (expeditionRun.isFinished()
                                                                 ? 0
                                                                 : expeditionSession
                                                                                 .availableNodes()
@@ -371,6 +405,40 @@ public final class ExpeditionMapController {
 
                 insightLabel.setText(
                                 "Insight: " + resources.insight());
+        }
+
+        /**
+         * Shows the final summary for a victorious or defeated expedition.
+         */
+        private void updateOutcomePanel() {
+                if (!expeditionRun.isFinished()) {
+                        outcomePanel.setVisible(false);
+                        outcomePanel.setManaged(false);
+                        return;
+                }
+
+                ExpeditionOutcomeViewModel viewModel = ExpeditionOutcomeViewModel.from(
+                                expeditionRun.summary());
+
+                outcomeTitleLabel.setText(viewModel.title());
+                outcomeMessageLabel.setText(viewModel.message());
+                outcomeSeedLabel.setText(viewModel.seedText());
+                outcomeDifficultyLabel.setText(viewModel.difficultyText());
+                outcomeStabilityLabel.setText(viewModel.stabilityText());
+                outcomeInsightLabel.setText(viewModel.insightText());
+                outcomeVisitedRoomsLabel.setText(viewModel.visitedRoomsText());
+
+                outcomePanel
+                                .getStyleClass()
+                                .removeAll(
+                                                "outcome-victory",
+                                                "outcome-defeat");
+                outcomePanel
+                                .getStyleClass()
+                                .add(viewModel.styleClass());
+
+                outcomePanel.setManaged(true);
+                outcomePanel.setVisible(true);
         }
 
         /**

@@ -1581,3 +1581,49 @@
     -fx-background-radius: 5px;
     -fx-background-insets: 0;
 }
+/* Expedition outcome */
+
+.outcome-card {
+    -fx-background-color: #151d2d;
+    -fx-background-radius: 10px;
+    -fx-border-radius: 10px;
+    -fx-border-width: 1px;
+    -fx-padding: 14px;
+}
+
+.outcome-victory {
+    -fx-border-color: #55d6a8;
+}
+
+.outcome-defeat {
+    -fx-border-color: #ff667d;
+}
+
+.outcome-title {
+    -fx-font-size: 19px;
+    -fx-font-weight: bold;
+}
+
+.outcome-victory .outcome-title {
+    -fx-text-fill: #69e0b5;
+}
+
+.outcome-defeat .outcome-title {
+    -fx-text-fill: #ff879d;
+}
+
+.outcome-message {
+    -fx-text-fill: #dce4f5;
+    -fx-font-size: 13px;
+}
+
+.outcome-stat-list {
+    -fx-background-color: #101725;
+    -fx-background-radius: 7px;
+    -fx-padding: 10px;
+}
+
+.outcome-stat-label {
+    -fx-text-fill: #b8c9e8;
+    -fx-font-size: 12px;
+}
